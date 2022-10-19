@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "csi-driver-availability-monitor.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "csi-driver-availability-monitor.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "csi-driver-availability-monitor.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "csi-driver-availability-monitor.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "csi-driver-availability-monitor.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: controller
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: metrics
+              protocol: TCP
+              containerPort: 8080
+            - name: health
+              protocol: TCP
+              containerPort: 8081
+            - name: receiver
+              protocol: TCP
+              containerPort: 8082
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          args:
+          - "controller"
+          {{- range .Values.controller.monitoringStorageClasses }}
+          - "--monitoring-storage-class={{ . }}"
+          {{- end }}
+          - "--container-image"
+          - "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          - "--namespace"
+          - "{{ .Release.Namespace }}"
+          - "--controller-url"
+          - "http://{{ include "csi-driver-availability-monitor.fullname" . }}.{{ .Release.Namespace }}.svc:8082"
+          {{- with .Values.controller.createProbeThreshold }}
+          - "--create-probe-threshold={{ . }}"
+          {{- end }}
+          {{- with .Values.controller.nodeSelectorLabel }}
+          - "--node-selector-label"
+          - "{{ . }}"
+          {{- end }}
+          {{- with .Values.controller.probePeriod }}
+          - "--probe-period"
+          - "{{ . }}"
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
