@@ -1,0 +1,23 @@
+domain: topolvm.io
+layout:
+- go.kubebuilder.io/v3
+projectName: csi-driver-availability-monitor
+repo: github.com/topolvm/csi-driver-availability-monitor
+resources:
+- controller: true
+  group: core
+  kind: Event
+  path: k8s.io/api/core/v1
+  version: v1
+- controller: true
+  group: core
+  kind: Node
+  path: k8s.io/api/core/v1
+  version: v1
+- controller: true
+  domain: k8s.io
+  group: storage
+  kind: StorageClass
+  path: k8s.io/api/storage/v1
+  version: v1
+version: "3"
