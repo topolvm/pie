@@ -11,9 +11,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/spf13/cobra"
-	"github.com/topolvm/csi-driver-availability-monitor/controller"
-	"github.com/topolvm/csi-driver-availability-monitor/controllers"
-	"github.com/topolvm/csi-driver-availability-monitor/runners"
+	"github.com/topolvm/pie/controller"
+	"github.com/topolvm/pie/controllers"
+	"github.com/topolvm/pie/runners"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -53,7 +53,7 @@ func init() {
 	flags.BoolVar(&enableLeaderElection, "leader-elect", true,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	flags.StringVar(&containerImage, "container-image", "", "The container image for csi-driver-availability-monitor.")
+	flags.StringVar(&containerImage, "container-image", "", "The container image for pie.")
 	flags.StringArrayVar(&monitoringStorageClasses, "monitoring-storage-class", nil, "Monitoring target StorageClasses.")
 	flags.StringVar(&nodeSelectorLabelString, "node-selector-label", "", "The node selector label to monitor nodes.")
 	flags.StringVar(&namespace, "namespace", "", "The namespace which the controller uses.")

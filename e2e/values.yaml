@@ -1,5 +1,5 @@
 image:
-  repository: csi-driver-availability-monitor
+  repository: pie
   pullPolicy: IfNotPresent
   tag: dev
 

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/topolvm/csi-driver-availability-monitor/controller"
+	"github.com/topolvm/pie/controller"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )

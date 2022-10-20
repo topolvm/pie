@@ -61,9 +61,9 @@ flowchart TB
     style volumeCD fill-opacity:0,stroke-width:0px
 ```
 
-### How csi-driver-availability-monitor works
+### How pie works
 
-csi-driver-availability-monitor works as follows:
+pie works as follows:
 
 1. The controller creates CronJobs for each node and StorageClass.
 2. A CronJob periodically creates a probe pod.

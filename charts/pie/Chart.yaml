@@ -1,5 +1,5 @@
 apiVersion: v2
-name: csi-driver-availability-monitor
+name: pie
 description: An application that monitors the availability of Kubernetes storage in end-to-end manner.
 
 # A chart can be either an 'application' or a 'library' chart.

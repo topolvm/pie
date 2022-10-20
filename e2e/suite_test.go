@@ -72,13 +72,13 @@ func TestMtest(t *testing.T) {
 	SetDefaultEventuallyPollingInterval(time.Second)
 	SetDefaultEventuallyTimeout(3 * time.Minute)
 
-	RunSpecs(t, "csi-driver-availability-monitor test")
+	RunSpecs(t, "pie test")
 }
 
 var _ = BeforeSuite(func() {
-	By("[BeforeSuite] Waiting for csi-driver-availability-monitor to get ready")
+	By("[BeforeSuite] Waiting for pie to get ready")
 	Eventually(func() error {
-		stdout, stderr, err := kubectl("-n", ns, "get", "deploy", "csi-driver-availability-monitor", "-o", "json")
+		stdout, stderr, err := kubectl("-n", ns, "get", "deploy", "pie", "-o", "json")
 		if err != nil {
 			return fmt.Errorf("kubectl get deploy failed. stderr: %s, err: %w", string(stderr), err)
 		}
@@ -90,15 +90,15 @@ var _ = BeforeSuite(func() {
 		}
 
 		if deploy.Status.AvailableReplicas != 1 {
-			return errors.New("csi-driver-availability-monitor is not available yet")
+			return errors.New("pie is not available yet")
 		}
 
 		return nil
 	}).Should(Succeed())
 })
 
-var _ = Describe("csi-driver-availability-monitor", func() {
-	It("should collect metrics of csi driver availability monitor", func() {
+var _ = Describe("pie", func() {
+	It("should collect metrics of pie", func() {
 		wg := sync.WaitGroup{}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer func() {
@@ -109,10 +109,10 @@ var _ = Describe("csi-driver-availability-monitor", func() {
 		_, _, err := kubectlWithInput(dummyStorageClassYaml, "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred())
 
-		_, _, err = kubectl("rollout", "restart", "-n", ns, "deploy/csi-driver-availability-monitor")
+		_, _, err = kubectl("rollout", "restart", "-n", ns, "deploy/pie")
 		Expect(err).NotTo(HaveOccurred())
 
-		err = portForward(ctx, &wg, ns, "svc/csi-driver-availability-monitor", "8080:8080")
+		err = portForward(ctx, &wg, ns, "svc/pie", "8080:8080")
 		Expect(err).NotTo(HaveOccurred())
 
 		stdout, _, err := kubectl("get", "node", "-o=jsonpath={.items[*].metadata.name}")

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/topolvm/csi-driver-availability-monitor/types"
+	"github.com/topolvm/pie/types"
 )
 
 type diskInfoImpl struct {

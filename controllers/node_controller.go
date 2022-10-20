@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/topolvm/csi-driver-availability-monitor/constants"
+	"github.com/topolvm/pie/constants"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
@@ -214,7 +214,7 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 		job.Spec.Schedule = convertPeriodToCronSchedule(r.probePeriod)
 		// according this doc https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#jobspec-v1-batch,
 		// selector is set by the system
-		// job.Spec.JobTemplate.ObjectMeta.Labels = map[string]string{"name": "cdam-probe"}
+		// job.Spec.JobTemplate.ObjectMeta.Labels = map[string]string{"name": "pie-probe"}
 
 		job.Spec.JobTemplate.Spec.Template.SetLabels(label)
 

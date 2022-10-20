@@ -1,6 +1,6 @@
 package main
 
-import "github.com/topolvm/csi-driver-availability-monitor/cmd"
+import "github.com/topolvm/pie/cmd"
 
 func main() {
 	cmd.Execute()

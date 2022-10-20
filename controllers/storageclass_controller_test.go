@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/topolvm/csi-driver-availability-monitor/constants"
+	"github.com/topolvm/pie/constants"
 	batchv1 "k8s.io/api/batch/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

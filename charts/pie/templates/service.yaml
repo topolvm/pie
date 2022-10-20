@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "csi-driver-availability-monitor.fullname" . }}
+  name: {{ include "pie.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "csi-driver-availability-monitor.labels" . | nindent 4 }}
+    {{- include "pie.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -17,4 +17,4 @@ spec:
       port: 8082
       targetPort: 8082
   selector:
-    {{- include "csi-driver-availability-monitor.selectorLabels" . | nindent 4 }}
+    {{- include "pie.selectorLabels" . | nindent 4 }}
