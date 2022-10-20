@@ -1,12 +1,11 @@
 TODO: add badges
 
-# csi-driver-availability-monitor
+# pie
 An application that monitors the availability of Kubernetes storage in end-to-end manner.
 
 ## Description
-TODO: decide the name XXX
 
-XXX verifies that PVs are successfully provisioned on the specified nodes for the specified storage classes and that the PVs can be successfully accessed. It outputs the results as metrics.
+pie verifies that PVs are successfully provisioned on the specified nodes for the specified storage classes and that the PVs can be successfully accessed. It outputs the results as metrics.
 
 ## Getting Started
 ### Running on the cluster
@@ -20,10 +19,9 @@ XXX verifies that PVs are successfully provisioned on the specified nodes for th
 
 2. Then you can install it using Helm.
 
-    TODO: decide name XXX
     ```sh
-    helm repo add XXX
-    helm install XXX --values values.yaml
+    helm repo add pie
+    helm install pie --values values.yaml
     ```
 
 ## Prometheus metrics

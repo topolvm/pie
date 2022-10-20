@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "csi-driver-availability-monitor.fullname" . }}
+  name: {{ include "pie.fullname" . }}
 rules:
 - apiGroups:
   - ""
@@ -59,7 +59,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "csi-driver-availability-monitor.fullname" . }}
+  name: {{ include "pie.fullname" . }}
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:
@@ -118,7 +118,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ include "csi-driver-availability-monitor.fullname" . }}-leader-election
+  name: {{ include "pie.fullname" . }}-leader-election
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups:

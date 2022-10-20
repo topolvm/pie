@@ -25,7 +25,7 @@ testbin/*
 *~
 
 # built binary
-csi-driver-availability-monitor
-!csi-driver-availability-monitor/
+pie
+!pie/
 
 e2e/.kubeconfig

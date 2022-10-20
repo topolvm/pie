@@ -1,8 +1,8 @@
 domain: topolvm.io
 layout:
 - go.kubebuilder.io/v3
-projectName: csi-driver-availability-monitor
-repo: github.com/topolvm/csi-driver-availability-monitor
+projectName: pie
+repo: github.com/topolvm/pie
 resources:
 - controller: true
   group: core

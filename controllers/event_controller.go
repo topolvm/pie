@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/topolvm/csi-driver-availability-monitor/constants"
-	"github.com/topolvm/csi-driver-availability-monitor/controller"
+	"github.com/topolvm/pie/constants"
+	"github.com/topolvm/pie/controller"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

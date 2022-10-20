@@ -1,5 +1,5 @@
 KIND_NODE_VERSION := v1.24.6@sha256:97e8d00bc37a7598a0b32d1fabd155a96355c49fa0d4d4790aab0f161bf31be1
-KIND_CLUSTER_NAME := csi-driver-availability-monitor-test
+KIND_CLUSTER_NAME := pie-test
 # https://github.com/kubernetes-sigs/kind/releases
 KIND_VERSION := v0.16.0
 HELM_VERSION := 3.10.1
@@ -15,10 +15,10 @@ HELM := $(BINDIR)/helm-$(HELM_VERSION)
 .PHONY: create-cluster
 create-cluster: $(KIND) $(HELM)
 	$(KIND) create cluster --name $(KIND_CLUSTER_NAME) --image kindest/node:$(KIND_NODE_VERSION)
-	$(MAKE) -C ../ docker-build IMG=csi-driver-availability-monitor:dev
-	$(KIND) load docker-image csi-driver-availability-monitor:dev --name $(KIND_CLUSTER_NAME)
+	$(MAKE) -C ../ docker-build IMG=pie:dev
+	$(KIND) load docker-image pie:dev --name $(KIND_CLUSTER_NAME)
 	$(MAKE) $(KUBECONFIG)
-	KUBECONFIG=$(KUBECONFIG) $(HELM) install --create-namespace -n e2e csi-driver-availability-monitor ../charts/csi-driver-availability-monitor/ -f values.yaml
+	KUBECONFIG=$(KUBECONFIG) $(HELM) install --create-namespace -n e2e pie ../charts/pie/ -f values.yaml
 
 .PHONY: test
 test: $(KUBECONFIG)

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/topolvm/csi-driver-availability-monitor/types"
+	"github.com/topolvm/pie/types"
 )
 
 type ReceiverHandler struct {

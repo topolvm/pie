@@ -1,15 +1,15 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "csi-driver-availability-monitor.fullname" . }}
+  name: {{ include "pie.fullname" . }}
   namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "csi-driver-availability-monitor.labels" . | nindent 4 }}
+    {{- include "pie.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "csi-driver-availability-monitor.selectorLabels" . | nindent 6 }}
+      {{- include "pie.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -17,13 +17,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "csi-driver-availability-monitor.selectorLabels" . | nindent 8 }}
+        {{- include "pie.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "csi-driver-availability-monitor.serviceAccountName" . }}
+      serviceAccountName: {{ include "pie.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -62,7 +62,7 @@ spec:
           - "--namespace"
           - "{{ .Release.Namespace }}"
           - "--controller-url"
-          - "http://{{ include "csi-driver-availability-monitor.fullname" . }}.{{ .Release.Namespace }}.svc:8082"
+          - "http://{{ include "pie.fullname" . }}.{{ .Release.Namespace }}.svc:8082"
           {{- with .Values.controller.createProbeThreshold }}
           - "--create-probe-threshold={{ . }}"
           {{- end }}

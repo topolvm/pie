@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/spf13/cobra"
-	"github.com/topolvm/csi-driver-availability-monitor/probe"
+	"github.com/topolvm/pie/probe"
 )
 
 var probeCmd = &cobra.Command{

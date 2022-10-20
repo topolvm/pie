@@ -8,7 +8,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use: "csi-driver-availability-monitor",
+	Use: "pie",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do Stuff Here
 	},

@@ -1,4 +1,4 @@
-module github.com/topolvm/csi-driver-availability-monitor
+module github.com/topolvm/pie
 
 go 1.18
 
