@@ -1,0 +1,29 @@
+on:
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "CODEOWNERS"
+  push:
+    paths-ignore:
+      - "**/*.md"
+      - "CODEOWNERS"
+    branches:
+      - "main"
+
+jobs:
+  e2e-k8s:
+    name: "e2e-k8s"
+    runs-on: "ubuntu-20.04"
+    strategy:
+      fail-fast: false
+      matrix:
+        kubernetes_versions: ["1.24", "1.23", "1.22"]
+    env:
+      KUBERNETES_VERSION: ${{ matrix.kubernetes_versions }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.19"
+      - run: make -C e2e create-cluster
+      - run: make -C e2e test
