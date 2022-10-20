@@ -1,0 +1,53 @@
+name: "Release"
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  release:
+    name: "release"
+    runs-on: "ubuntu-20.04"
+    steps:
+      - name: "Validate Release Version"
+        id: check_version
+        run: |
+          VERSION=$(echo $GITHUB_REF | sed -ne 's/[^0-9]*\([0-9]\+\.[0-9]\+\.[0-9]\+\(-.*\)\?\).*/\1/p')
+          if [ "$VERSION" = "" ]; then
+            echo "Invalid version format. $GITHUB_REF"
+            exit 1
+          fi
+          if [ $(echo $VERSION | grep "-") ]; then PRERELEASE=true; else PRERELEASE=false; fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "prerelease=${PRERELEASE}" >> $GITHUB_OUTPUT
+
+      - name: "Export IMAGE_PREFIX"
+        run: |
+          if [ "${{ secrets.IMAGE_PREFIX }}" != "" ]; then IMAGE_PREFIX=${{ secrets.IMAGE_PREFIX }}; else IMAGE_PREFIX=ghcr.io/topolvm/; fi
+          echo "IMAGE_PREFIX=${IMAGE_PREFIX}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.19"
+
+      - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - run: make docker-build IMG=ghcr.io/topolvm/pie:${{ steps.check_version.outputs.version }}
+      - run: docker push ghcr.io/topolvm/pie:${{ steps.check_version.outputs.version }}
+
+      - name: "Push branch tag"
+        if: ${{ steps.check_version.outputs.prerelease == 'false' }}
+        run: |
+          BRANCH=$(echo ${{ steps.check_version.outputs.version }} | cut -d "." -f 1-2)
+          docker tag ghcr.io/topolvm/pie:${{ steps.check_version.outputs.version }} ghcr.io/topolvm/pie:${BRANCH}
+          docker push ghcr.io/topolvm/pie:${BRANCH}
+
+      - name: "Create Release"
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release v${{ steps.check_version.outputs.version  }}
+          draft: true
+          prerelease: ${{ steps.check_version.outputs.prerelease }}
