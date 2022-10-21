@@ -1,4 +1,7 @@
-TODO: add badges
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/topolvm/pie?cacheSeconds=3600)
+[![Main](https://github.com/topolvm/pie/actions/workflows/main.yaml/badge.svg)](https://github.com/topolvm/pie/actions)
+[![Go Reference](https://pkg.go.dev/badge/github.com/topolvm/pie.svg)](https://pkg.go.dev/github.com/topolvm/pie)
+[![Go Report Card](https://goreportcard.com/badge/github.com/topolvm/pie)](https://goreportcard.com/report/github.com/topolvm/pie)
 
 # pie
 An application that monitors the availability of Kubernetes storage in end-to-end manner.
