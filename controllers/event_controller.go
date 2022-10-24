@@ -111,7 +111,7 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	return ctrl.Result{}, nil
 }
 
-func (r *EventReconciler) getNodeNameAndStorageClass(ctx context.Context, podName string, storageClasses []string) (string, string, error) {
+func (r *EventReconciler) getNodeNameAndStorageClass(ctx context.Context, podName string) (string, string, error) {
 	var pod corev1.Pod
 	err := r.client.Get(ctx, client.ObjectKey{Namespace: r.namespace, Name: podName}, &pod)
 	if err != nil {
@@ -165,7 +165,7 @@ func (r *EventReconciler) SetupWithManager(mgr ctrl.Manager) error {
 					if countedFlag[podName] {
 						continue
 					}
-					nodeName, storageClass, err := r.getNodeNameAndStorageClass(ctx, podName, r.storageClasses)
+					nodeName, storageClass, err := r.getNodeNameAndStorageClass(ctx, podName)
 					if err != nil {
 						eventCtrlLogger.Error(err, "failed to name of node and storage class related to the pod", "pod", podName)
 						continue
