@@ -112,7 +112,6 @@ You must change the version of Chart.yaml when making changes to the Helm Chart.
 3. Update image and chart versions in files below:
 
     - charts/pie/Chart.yaml
-    - charts/pie/values.yaml
 
     ```console
     $ sed -r -i "s/version: [[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+/version: ${CHARTVERSION}/g" charts/pie/Chart.yaml
