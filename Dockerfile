@@ -1,4 +1,4 @@
-FROM quay.io/cybozu/golang:1.18-focal as builder
+FROM golang:1.19 as builder
 
 WORKDIR /work
 
