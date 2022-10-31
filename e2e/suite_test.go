@@ -140,9 +140,9 @@ var _ = Describe("pie", func() {
 
 			By("checking metrics for standard SC")
 			for _, metricName := range []string{
-				"csi_driver_io_write_latency_seconds",
-				"csi_driver_io_read_latency_seconds",
-				"csi_driver_create_probe_fast_total",
+				"pie_io_write_latency_seconds",
+				"pie_io_read_latency_seconds",
+				"pie_create_probe_fast_total",
 			} {
 				g.Expect(metricName).Should(BeKeyOf(metricFamilies))
 				for _, metric := range metricFamilies[metricName].Metric {
@@ -152,8 +152,8 @@ var _ = Describe("pie", func() {
 			}
 
 			By("checking metrics for dummy SC")
-			g.Expect("csi_driver_create_probe_slow_total").Should(BeKeyOf(metricFamilies))
-			for _, metric := range metricFamilies["csi_driver_create_probe_slow_total"].Metric {
+			g.Expect("pie_create_probe_slow_total").Should(BeKeyOf(metricFamilies))
+			for _, metric := range metricFamilies["pie_create_probe_slow_total"].Metric {
 				g.Expect(metric.Label).Should(ContainElement(&nodeLabelPair))
 				g.Expect(metric.Label).Should(ContainElement(&dummySCLabelPair))
 			}

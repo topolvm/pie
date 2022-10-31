@@ -32,7 +32,7 @@ func NewMetrics() MetricsExporter {
 func (m *metricExporterImpl) registerMetrics() {
 	m.writeLatencyGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: "csi_driver",
+			Namespace: "pie",
 			Name:      "io_write_latency_seconds",
 			Help:      "IO latency of write.",
 		},
@@ -42,7 +42,7 @@ func (m *metricExporterImpl) registerMetrics() {
 
 	m.readLatencyGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: "csi_driver",
+			Namespace: "pie",
 			Name:      "io_read_latency_seconds",
 			Help:      "IO latency of read.",
 		},
@@ -52,7 +52,7 @@ func (m *metricExporterImpl) registerMetrics() {
 
 	m.createProbeFastCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: "csi_driver",
+			Namespace: "pie",
 			Name:      "create_probe_fast_total",
 			Help:      "The number of attempts that take less time between the creation of the Pod object and the creation of the container than the threshold.",
 		},
@@ -62,7 +62,7 @@ func (m *metricExporterImpl) registerMetrics() {
 
 	m.createProbeSlowCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Namespace: "csi_driver",
+			Namespace: "pie",
 			Name:      "create_probe_slow_total",
 			Help:      "The number of attempts that take more time between the creation of the Pod object and the creation of the container than the threshold.",
 		},
