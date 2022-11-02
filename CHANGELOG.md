@@ -7,6 +7,17 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.2.0] - 2022-11-02
+
+### Changed
+
+- change the prefix of metric names to "pie". (#15)
+  - **BREAKING**: Metrics names have been changed.
+
+### Contributors
+
+- @peng225
+
 ## [0.1.1] - 2022-10-26
 
 ### Changed
@@ -25,6 +36,7 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/topolvm/pie/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/topolvm/pie/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/topolvm/pie/compare/4b825dc642cb6eb9a060e54bf8d69288fbee4904...v0.1.0
