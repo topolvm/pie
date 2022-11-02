@@ -28,22 +28,22 @@ pie verifies that PVs are successfully provisioned on the specified nodes for th
     ```
 
 ## Prometheus metrics
-### `io_write_latency_seconds`
+### `pie_io_write_latency_seconds`
 IO latency of write.
 
 TYPE: gauge
 
-### `io_read_latency_seconds`
+### `pie_io_read_latency_seconds`
 IO latency of read.
 
 TYPE: gauge
 
-### `create_probe_fast_total`
+### `pie_create_probe_fast_total`
 The number of attempts that take less time between the creation of the Pod object and the creation of the container than the threshold.
 
 TYPE: counter
 
-### `create_probe_slow_total`
+### `pie_create_probe_slow_total`
 The number of attempts that take more time between the creation of the Pod object and the creation of the container than the threshold.
 
 TYPE: counter
