@@ -66,8 +66,8 @@ spec:
           {{- with .Values.controller.createProbeThreshold }}
           - "--create-probe-threshold={{ . }}"
           {{- end }}
-          {{- with .Values.controller.nodeSelectorLabel }}
-          - "--node-selector-label"
+          {{- with .Values.controller.nodeSelector }}
+          - "--node-selector"
           - "{{ . }}"
           {{- end }}
           {{- with .Values.controller.probePeriod }}

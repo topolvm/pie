@@ -3,19 +3,18 @@ package cmd
 import (
 	"errors"
 	"flag"
-	"strings"
 	"time"
-
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/spf13/cobra"
 	"github.com/topolvm/pie/controller"
 	"github.com/topolvm/pie/controllers"
 	"github.com/topolvm/pie/runners"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/klog/v2"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
@@ -36,7 +35,7 @@ var (
 	healthProbeAddr          string
 	containerImage           string
 	monitoringStorageClasses []string
-	nodeSelectorLabelString  string
+	nodeSelectorString       string
 	namespace                string
 	controllerURL            string
 	probePeriod              int
@@ -55,7 +54,7 @@ func init() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flags.StringVar(&containerImage, "container-image", "", "The container image for pie.")
 	flags.StringArrayVar(&monitoringStorageClasses, "monitoring-storage-class", nil, "Monitoring target StorageClasses.")
-	flags.StringVar(&nodeSelectorLabelString, "node-selector-label", "", "The node selector label to monitor nodes.")
+	flags.StringVar(&nodeSelectorString, "node-selector", "", "The node selector for monitor nodes.")
 	flags.StringVar(&namespace, "namespace", "", "The namespace which the controller uses.")
 	flags.StringVar(&controllerURL, "controller-url", "", "The controller URL which probe pods access")
 	flags.IntVar(&probePeriod, "probe-period", 1, "The period[minute] for CronJob to create a probe pod.")
@@ -104,15 +103,10 @@ func subMain() error {
 		setupLog.Error(err, "the container image should be specified")
 		return err
 	}
-	nodeSelectorLabel := make(map[string]string)
-	if nodeSelectorLabelString != "" {
-		if strings.Count(nodeSelectorLabelString, "=") != 1 {
-			err = errors.New("invalid node selector label")
-			setupLog.Error(err, "specify a label like key=value.")
-			return err
-		}
-		kv := strings.Split(nodeSelectorLabelString, "=")
-		nodeSelectorLabel[kv[0]] = kv[1]
+	nodeSelector, err := metav1.ParseToLabelSelector(nodeSelectorString)
+	if err != nil {
+		setupLog.Error(err, "invalid node selector")
+		return err
 	}
 	if probePeriod < 1 || probePeriod > 59 {
 		err = errors.New("invalid probe period")
@@ -150,7 +144,7 @@ func subMain() error {
 		namespace,
 		controllerURL,
 		monitoringStorageClasses,
-		nodeSelectorLabel,
+		nodeSelector,
 		probePeriod,
 	)
 	err = nodeReconciler.SetupWithManager(mgr)

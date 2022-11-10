@@ -33,7 +33,7 @@ type NodeReconciler struct {
 	namespace                string
 	controllerURL            string
 	monitoringStorageClasses []string
-	nodeSelectorLabel        map[string]string
+	nodeSelector             *metav1.LabelSelector
 	probePeriod              int
 }
 
@@ -43,7 +43,7 @@ func NewNodeReconciler(
 	namespace string,
 	controllerURL string,
 	monitoringStorageClasses []string,
-	nodeSelectorLabel map[string]string,
+	nodeSelector *metav1.LabelSelector,
 	probePeriod int,
 ) *NodeReconciler {
 	return &NodeReconciler{
@@ -52,7 +52,7 @@ func NewNodeReconciler(
 		namespace:                namespace,
 		controllerURL:            controllerURL,
 		monitoringStorageClasses: monitoringStorageClasses,
-		nodeSelectorLabel:        nodeSelectorLabel,
+		nodeSelector:             nodeSelector,
 		probePeriod:              probePeriod,
 	}
 }
@@ -307,9 +307,7 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *NodeReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	pred, err := predicate.LabelSelectorPredicate(metav1.LabelSelector{
-		MatchLabels: r.nodeSelectorLabel,
-	})
+	pred, err := predicate.LabelSelectorPredicate(*r.nodeSelector)
 	if err != nil {
 		return err
 	}
