@@ -60,4 +60,4 @@ affinity: {}
 controller:
   monitoringStorageClasses: []
   createProbeThreshold:
-  nodeSelectorLabel:
+  nodeSelector:
