@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   pie:
   - apiVersion: v2
+    appVersion: 0.3.0
+    created: "2022-11-10T04:50:41.936772755Z"
+    description: An application that monitors the availability of Kubernetes storage
+      in end-to-end manner.
+    digest: a384dd957151d552a51d6f34a9f609cc468bf8358d08ff98c9b651141710f80f
+    name: pie
+    type: application
+    urls:
+    - https://github.com/topolvm/pie/releases/download/pie-chart-v0.2.0/pie-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
     appVersion: 0.2.0
     created: "2022-11-02T04:29:04.768264559Z"
     description: An application that monitors the availability of Kubernetes storage
@@ -45,4 +56,4 @@ entries:
     urls:
     - https://github.com/topolvm/pie/releases/download/pie-chart-v0.0.2/pie-0.0.2.tgz
     version: 0.0.2
-generated: "2022-11-02T04:29:04.768544361Z"
+generated: "2022-11-10T04:50:41.936791355Z"
