@@ -167,7 +167,9 @@ func (r *EventReconciler) SetupWithManager(mgr ctrl.Manager) error {
 					}
 					nodeName, storageClass, err := r.getNodeNameAndStorageClass(ctx, podName)
 					if err != nil {
-						eventCtrlLogger.Error(err, "failed to name of node and storage class related to the pod", "pod", podName)
+						if !apierrors.IsNotFound(err) {
+							eventCtrlLogger.Error(err, "failed to name of node and storage class related to the pod", "pod", podName)
+						}
 						continue
 					}
 					t, ok := r.podCreatedEventTime[podName]
