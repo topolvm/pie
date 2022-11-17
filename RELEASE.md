@@ -56,6 +56,12 @@ Bump version
     ```
 
 3. Edit `CHANGELOG.md` for the new version ([example][]).
+   The candidate of relevant PRs can be obtained by the following command.
+   ```
+   git log --merges --format="%s%x00%b" $(git tag | grep "^v" | sort -V -r | head -n 1)..main | sed -E 's|^Merge pull request #([0-9]*)[^\x0]*\x0(.*)|- \2 ([#\1](https://github.com/topolvm/pie/pull/\1))|' | tac
+   ```
+   Please remove PRs which contain changes only to the helm chart.
+
 4. Commit the change and create a pull request:
 
     ```console
@@ -119,6 +125,11 @@ You must change the version of Chart.yaml when making changes to the Helm Chart.
     ```
 
 4. Edit `charts/pie/CHANGELOG.md` for the new version.
+   The candidate of relevant PRs can be obtained by the following command.
+   ```
+   git log --merges --format="%s%x00%b" $(git tag | grep "^pie-chart-v" | sort -V -r | head -n 1)..main | sed -E 's|^Merge pull request #([0-9]*)[^\x0]*\x0(.*)|- \2 ([#\1](https://github.com/topolvm/pie/pull/\1))|' | tac
+   ```
+   Please select PRs which contain changes to the helm chart.
 
 5. Commit the change and create a pull request:
 
