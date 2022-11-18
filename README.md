@@ -10,6 +10,10 @@ An application that monitors the availability of Kubernetes storage in end-to-en
 
 pie verifies that PVs are successfully provisioned on the specified nodes for the specified storage classes and that the PVs can be successfully accessed. It outputs the results as metrics.
 
+## Supported environments
+
+- Kubernetes: 1.24, 1.23, 1.22
+
 ## Getting Started
 ### Running on the cluster
 

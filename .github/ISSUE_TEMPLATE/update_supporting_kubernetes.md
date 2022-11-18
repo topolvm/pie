@@ -11,7 +11,11 @@ assignees: ''
 
 - Read [this document](https://github.com/topolvm/pie/blob/main/docs/maintenance.md).
 
-## Must Update Dependencies
+## Before Check List
+
+There is a check list to confirm depending libraries or tools are released.
+
+### Must Update Dependencies
 
 Must update Kubernetes with each new version of Kubernetes.
 
