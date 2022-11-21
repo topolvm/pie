@@ -180,7 +180,7 @@ func (p *provisionObserver) deletePod(ctx context.Context, podName string) error
 }
 
 func (p *provisionObserver) Start(ctx context.Context) error {
-	countedFlag := make(map[string]bool)
+	countedFlag := make(map[string]struct{})
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
@@ -199,7 +199,13 @@ func (p *provisionObserver) Start(ctx context.Context) error {
 			defer p.muPodCreatedEventTime.Unlock()
 
 			for podName, firstTime := range p.firstPodEventTime {
-				if countedFlag[podName] {
+				if firstTime.Before(time.Now().Add(-p.eventTTL)) {
+					delete(p.firstPodEventTime, podName)
+					delete(countedFlag, podName)
+					delete(p.podCreatedEventTime, podName)
+					continue
+				}
+				if _, ok := countedFlag[podName]; ok {
 					continue
 				}
 				nodeName, storageClass, err := p.getNodeNameAndStorageClass(ctx, podName)
@@ -211,7 +217,7 @@ func (p *provisionObserver) Start(ctx context.Context) error {
 				}
 				t, ok := p.podCreatedEventTime[podName]
 				if ok {
-					countedFlag[podName] = true
+					countedFlag[podName] = struct{}{}
 					if t.Sub(firstTime) >= p.createProbeThreshold {
 						p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
 						err := p.deletePod(ctx, podName)
@@ -223,18 +229,13 @@ func (p *provisionObserver) Start(ctx context.Context) error {
 					}
 				} else {
 					if time.Since(firstTime) >= p.createProbeThreshold {
-						countedFlag[podName] = true
+						countedFlag[podName] = struct{}{}
 						p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
 						err := p.deletePod(ctx, podName)
 						if err != nil {
 							continue
 						}
 					}
-				}
-				if firstTime.Before(time.Now().Add(-p.eventTTL)) {
-					delete(p.firstPodEventTime, podName)
-					delete(countedFlag, podName)
-					delete(p.podCreatedEventTime, podName)
 				}
 			}
 		}()
