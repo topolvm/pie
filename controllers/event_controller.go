@@ -22,17 +22,11 @@ var (
 
 // EventReconciler reconciles a Event object
 type EventReconciler struct {
-	client                client.Client
-	firstPodEventTime     map[string]time.Time
-	podCreatedEventTime   map[string]time.Time
-	createProbeThreshold  time.Duration
-	exporter              controller.MetricsExporter
-	storageClasses        []string
-	namespace             string
-	startTime             time.Time
-	eventTTL              time.Duration
-	muFirstPodEventTime   sync.Mutex
-	muPodCreatedEventTime sync.Mutex
+	client         client.Client
+	storageClasses []string
+	namespace      string
+	startTime      time.Time
+	po             *provisionObserver
 }
 
 func NewEventReconciler(
@@ -44,15 +38,11 @@ func NewEventReconciler(
 	eventTTL time.Duration,
 ) *EventReconciler {
 	return &EventReconciler{
-		client:               client,
-		firstPodEventTime:    make(map[string]time.Time),
-		podCreatedEventTime:  make(map[string]time.Time),
-		createProbeThreshold: createProbeThreshold,
-		exporter:             exporter,
-		storageClasses:       storageClasses,
-		namespace:            namespace,
-		startTime:            time.Now(),
-		eventTTL:             eventTTL,
+		client:         client,
+		storageClasses: storageClasses,
+		namespace:      namespace,
+		startTime:      time.Now(),
+		po:             newProvisionObserver(client, namespace, exporter, createProbeThreshold, eventTTL),
 	}
 }
 
@@ -90,30 +80,69 @@ func (r *EventReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			eventTime = metav1.MicroTime(event.FirstTimestamp)
 		}
 		if !eventTime.IsZero() && eventTime.Time.After(r.startTime) {
-			func() {
-				r.muFirstPodEventTime.Lock()
-				defer r.muFirstPodEventTime.Unlock()
-				if t, ok := r.firstPodEventTime[podName]; ok {
-					if eventTime.Time.Before(t) {
-						r.firstPodEventTime[podName] = eventTime.Time
-					}
-				} else {
-					r.firstPodEventTime[podName] = eventTime.Time
-				}
-			}()
+			r.po.setFirstPodEventTime(podName, eventTime.Time)
+
 		}
 		if event.Source.Component == "kubelet" && event.Reason == "Created" && eventTime.Time.After(r.startTime) {
-			r.muPodCreatedEventTime.Lock()
-			r.podCreatedEventTime[podName] = eventTime.Time
-			r.muPodCreatedEventTime.Unlock()
+			r.po.setPodCreatedEventTime(podName, eventTime.Time)
 		}
 	}
 	return ctrl.Result{}, nil
 }
 
-func (r *EventReconciler) getNodeNameAndStorageClass(ctx context.Context, podName string) (string, string, error) {
+type provisionObserver struct {
+	client                client.Client
+	namespace             string
+	exporter              controller.MetricsExporter
+	eventTTL              time.Duration
+	createProbeThreshold  time.Duration
+	firstPodEventTime     map[string]time.Time
+	podCreatedEventTime   map[string]time.Time
+	muFirstPodEventTime   sync.Mutex
+	muPodCreatedEventTime sync.Mutex
+}
+
+func newProvisionObserver(
+	client client.Client,
+	namespace string,
+	exporter controller.MetricsExporter,
+	createProbeThreshold time.Duration,
+	eventTTL time.Duration,
+) *provisionObserver {
+	return &provisionObserver{
+		client:               client,
+		namespace:            namespace,
+		exporter:             exporter,
+		eventTTL:             eventTTL,
+		createProbeThreshold: createProbeThreshold,
+		firstPodEventTime:    make(map[string]time.Time),
+		podCreatedEventTime:  make(map[string]time.Time),
+	}
+}
+
+func (p *provisionObserver) setFirstPodEventTime(podName string, eventTime time.Time) {
+	p.muFirstPodEventTime.Lock()
+	defer p.muFirstPodEventTime.Unlock()
+
+	if t, ok := p.firstPodEventTime[podName]; ok {
+		if eventTime.Before(t) {
+			p.firstPodEventTime[podName] = eventTime
+		}
+	} else {
+		p.firstPodEventTime[podName] = eventTime
+	}
+}
+
+func (p *provisionObserver) setPodCreatedEventTime(podName string, eventTime time.Time) {
+	p.muPodCreatedEventTime.Lock()
+	defer p.muPodCreatedEventTime.Unlock()
+
+	p.podCreatedEventTime[podName] = eventTime
+}
+
+func (p *provisionObserver) getNodeNameAndStorageClass(ctx context.Context, podName string) (string, string, error) {
 	var pod corev1.Pod
-	err := r.client.Get(ctx, client.ObjectKey{Namespace: r.namespace, Name: podName}, &pod)
+	err := p.client.Get(ctx, client.ObjectKey{Namespace: p.namespace, Name: podName}, &pod)
 	if err != nil {
 		return "", "", err
 	}
@@ -121,9 +150,9 @@ func (r *EventReconciler) getNodeNameAndStorageClass(ctx context.Context, podNam
 	return pod.GetLabels()[constants.ProbeNodeLabelKey], pod.GetLabels()[constants.ProbeStorageClassLabelKey], nil
 }
 
-func (r *EventReconciler) deletePod(ctx context.Context, podName string) error {
+func (p *provisionObserver) deletePod(ctx context.Context, podName string) error {
 	var podForDelete corev1.Pod
-	err := r.client.Get(ctx, client.ObjectKey{Namespace: r.namespace, Name: podName}, &podForDelete)
+	err := p.client.Get(ctx, client.ObjectKey{Namespace: p.namespace, Name: podName}, &podForDelete)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil
@@ -137,7 +166,7 @@ func (r *EventReconciler) deletePod(ctx context.Context, podName string) error {
 		UID:             &uid,
 		ResourceVersion: &resourceVersion,
 	}
-	err = r.client.Delete(ctx, &podForDelete, &client.DeleteOptions{
+	err = p.client.Delete(ctx, &podForDelete, &client.DeleteOptions{
 		Preconditions: &cond,
 	})
 	if err != nil {
@@ -150,59 +179,71 @@ func (r *EventReconciler) deletePod(ctx context.Context, podName string) error {
 	return nil
 }
 
-// SetupWithManager sets up the controller with the Manager.
-func (r *EventReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	go func() {
-		ctx := context.Background()
-		countedFlag := make(map[string]bool)
-		for range time.Tick(time.Second) {
-			func() {
-				r.muFirstPodEventTime.Lock()
-				defer r.muFirstPodEventTime.Unlock()
-				r.muPodCreatedEventTime.Lock()
-				defer r.muPodCreatedEventTime.Unlock()
-				for podName, firstTime := range r.firstPodEventTime {
-					if countedFlag[podName] {
-						continue
+func (p *provisionObserver) Start(ctx context.Context) error {
+	countedFlag := make(map[string]bool)
+
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+		case <-ctx.Done():
+			return nil
+		}
+
+		func() {
+			p.muFirstPodEventTime.Lock()
+			defer p.muFirstPodEventTime.Unlock()
+			p.muPodCreatedEventTime.Lock()
+			defer p.muPodCreatedEventTime.Unlock()
+
+			for podName, firstTime := range p.firstPodEventTime {
+				if countedFlag[podName] {
+					continue
+				}
+				nodeName, storageClass, err := p.getNodeNameAndStorageClass(ctx, podName)
+				if err != nil {
+					if !apierrors.IsNotFound(err) {
+						eventCtrlLogger.Error(err, "failed to get node and storage class related to the pod", "pod", podName)
 					}
-					nodeName, storageClass, err := r.getNodeNameAndStorageClass(ctx, podName)
-					if err != nil {
-						if !apierrors.IsNotFound(err) {
-							eventCtrlLogger.Error(err, "failed to get node and storage class related to the pod", "pod", podName)
-						}
-						continue
-					}
-					t, ok := r.podCreatedEventTime[podName]
-					if ok {
-						countedFlag[podName] = true
-						if t.Sub(firstTime) >= r.createProbeThreshold {
-							r.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
-							err := r.deletePod(ctx, podName)
-							if err != nil {
-								continue
-							}
-						} else {
-							r.exporter.IncrementCreateProbeFastCount(nodeName, storageClass)
+					continue
+				}
+				t, ok := p.podCreatedEventTime[podName]
+				if ok {
+					countedFlag[podName] = true
+					if t.Sub(firstTime) >= p.createProbeThreshold {
+						p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
+						err := p.deletePod(ctx, podName)
+						if err != nil {
+							continue
 						}
 					} else {
-						if time.Since(firstTime) >= r.createProbeThreshold {
-							countedFlag[podName] = true
-							r.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
-							err := r.deletePod(ctx, podName)
-							if err != nil {
-								continue
-							}
+						p.exporter.IncrementCreateProbeFastCount(nodeName, storageClass)
+					}
+				} else {
+					if time.Since(firstTime) >= p.createProbeThreshold {
+						countedFlag[podName] = true
+						p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
+						err := p.deletePod(ctx, podName)
+						if err != nil {
+							continue
 						}
 					}
-					if firstTime.Before(time.Now().Add(-r.eventTTL)) {
-						delete(r.firstPodEventTime, podName)
-						delete(countedFlag, podName)
-						delete(r.podCreatedEventTime, podName)
-					}
 				}
-			}()
-		}
-	}()
+				if firstTime.Before(time.Now().Add(-p.eventTTL)) {
+					delete(p.firstPodEventTime, podName)
+					delete(countedFlag, podName)
+					delete(p.podCreatedEventTime, podName)
+				}
+			}
+		}()
+	}
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *EventReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	mgr.Add(r.po)
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.Event{}).
 		Complete(r)
