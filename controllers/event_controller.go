@@ -203,6 +203,7 @@ func (p *provisionObserver) Start(ctx context.Context) error {
 					delete(p.firstPodEventTime, podName)
 					delete(countedFlag, podName)
 					delete(p.podCreatedEventTime, podName)
+					eventCtrlLogger.Info("slice GC worked.")
 					continue
 				}
 				if _, ok := countedFlag[podName]; ok {
@@ -215,8 +216,10 @@ func (p *provisionObserver) Start(ctx context.Context) error {
 					}
 					continue
 				}
+				eventCtrlLogger.Info("pod found.", "podName", podName, "nodeName", nodeName, "storageClass", storageClass)
 				t, ok := p.podCreatedEventTime[podName]
 				if ok {
+					eventCtrlLogger.Info("created event time found.", "firstTime", firstTime, "podCreatedEventTime", p.podCreatedEventTime[podName])
 					countedFlag[podName] = struct{}{}
 					if t.Sub(firstTime) >= p.createProbeThreshold {
 						p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
@@ -228,6 +231,7 @@ func (p *provisionObserver) Start(ctx context.Context) error {
 						p.exporter.IncrementCreateProbeFastCount(nodeName, storageClass)
 					}
 				} else {
+					eventCtrlLogger.Info("created event time not found.", "firstTime", firstTime)
 					if time.Since(firstTime) >= p.createProbeThreshold {
 						countedFlag[podName] = struct{}{}
 						p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
