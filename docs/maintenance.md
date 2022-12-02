@@ -41,14 +41,21 @@ $ VERSION=<upgrading controller-runtime version>
 $ go get sigs.k8s.io/controller-runtime@v${VERSION}
 ```
 
-Read the kubebuilder's `go.mod`(https://github.com/kubernetes-sigs/kubebuilder/blob/\<upgrading Kubernetes release version\>/go.mod), and check the `controller-tools` version corresponding to `controller-runtime`. To change the version, edit `Makefile`. 
+Read the [`controller-tools`'s release note](https://github.com/kubernetes-sigs/controller-tools/releases), and update to the newest version that is compatible with all supported kubernetes versions. If there are breaking changes, we should decide how to manage these changes.
+To change the version, edit `Makefile`. 
 
 #### Depending tools
 
 The following tools do not depend on other software, use latest versions.
+- [kind](https://github.com/kubernetes-sigs/kind/releases)
+  - To change the version, edit the following files.
+    - `e2e/Makefile`
 - [helm](https://github.com/helm/helm/releases)
   - To change the version, edit the following files.
-    - `e2e/Makefile`   
+    - `e2e/Makefile`
+- [kustomize](https://github.com/kubernetes-sigs/kustomize/releases)
+  - To change the version, edit the following files.
+    - `Makefile`
 
 #### Depending modules
 
