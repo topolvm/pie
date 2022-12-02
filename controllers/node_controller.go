@@ -224,7 +224,7 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 
 		volumeName := "genericvol"
 		container := &job.Spec.JobTemplate.Spec.Template.Spec.Containers[0]
-		container.Name = "probe"
+		container.Name = constants.ProbeContainerName
 		container.Image = r.containerImage
 		container.VolumeMounts = []corev1.VolumeMount{
 			{

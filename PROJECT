@@ -6,11 +6,6 @@ repo: github.com/topolvm/pie
 resources:
 - controller: true
   group: core
-  kind: Event
-  path: k8s.io/api/core/v1
-  version: v1
-- controller: true
-  group: core
   kind: Node
   path: k8s.io/api/core/v1
   version: v1
@@ -19,5 +14,10 @@ resources:
   group: storage
   kind: StorageClass
   path: k8s.io/api/storage/v1
+  version: v1
+- controller: true
+  group: core
+  kind: Pod
+  path: k8s.io/api/core/v1
   version: v1
 version: "3"
