@@ -40,7 +40,6 @@ var (
 	controllerURL            string
 	probePeriod              int
 	createProbeThreshold     time.Duration
-	eventTTL                 time.Duration
 
 	opts zap.Options
 )
@@ -59,7 +58,6 @@ func init() {
 	flags.StringVar(&controllerURL, "controller-url", "", "The controller URL which probe pods access")
 	flags.IntVar(&probePeriod, "probe-period", 1, "The period[minute] for CronJob to create a probe pod.")
 	flags.DurationVar(&createProbeThreshold, "create-probe-threshold", time.Minute, "The threshold of probe creation.")
-	flags.DurationVar(&eventTTL, "event-ttl", 24*time.Hour, "TTL to delete event timestamp")
 	opts.Development = true
 
 	goflags := flag.NewFlagSet("klog", flag.ExitOnError)
@@ -119,17 +117,16 @@ func subMain() error {
 			"probe period", probePeriod, "create probe threshold", createProbeThreshold)
 		return err
 	}
-	eventReconciler := controllers.NewEventReconciler(
+	podReconciler := controllers.NewPodReconciler(
 		mgr.GetClient(),
 		createProbeThreshold,
 		exporter,
 		monitoringStorageClasses,
 		namespace,
-		eventTTL,
 	)
-	err = eventReconciler.SetupWithManager(mgr)
+	err = podReconciler.SetupWithManager(mgr)
 	if err != nil {
-		setupLog.Error(err, "unable to start eventReconciler")
+		setupLog.Error(err, "unable to start podReconciler")
 		return err
 	}
 
