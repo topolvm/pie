@@ -7,6 +7,24 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-12-05
+
+### Added
+
+- add an issue template to update supporting kubernetes ([#26](https://github.com/topolvm/pie/pull/26))
+- set dependabot for github actions ([#27](https://github.com/topolvm/pie/pull/27))
+
+### Changed
+
+- Support Kubernetes 1.25. ([#32](https://github.com/topolvm/pie/pull/32))
+  - **BREAKING**: Support for Kubernetes 1.22 has been dropped.
+- Replace event reconciler with pod reconciler to reduce api-server load ([#33](https://github.com/topolvm/pie/pull/33))
+
+### Contributors
+
+- @peng225
+- @toshipp
+
 ## [0.3.1] - 2022-11-21
 
 ### Changed
@@ -68,7 +86,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/topolvm/pie/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/topolvm/pie/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/topolvm/pie/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/topolvm/pie/compare/v0.1.1...v0.2.0
