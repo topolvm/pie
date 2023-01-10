@@ -22,3 +22,10 @@ version: 0.3.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: 0.4.0
+
+annotations:
+  artifacthub.io/images: |
+    - name: pie
+      image: ghcr.io/topolvm/pie:0.4.0
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/operatorCapabilities: deep insights

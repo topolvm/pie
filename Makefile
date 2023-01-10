@@ -4,6 +4,7 @@ IMG ?= ghcr.io/topolvm/pie:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # NOTE: the suffix .x means wildcard match so specifying the latest patch version.
 ENVTEST_K8S_VERSION = 1.25.x
+CHART_TESTING_VERSION = 3.7.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -103,6 +104,18 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=$(ignore-not-found) -f -
+
+##@ Chart Testing
+
+.PHONY: ct-lint
+ct-lint: ## Lint and validate a chart.
+	docker run \
+		--network host \
+		--workdir /data \
+		--volume ~/.kube/config:/root/.kube/config:ro \
+		--volume $(shell pwd):/data \
+		quay.io/helmpack/chart-testing:v$(CHART_TESTING_VERSION) \
+		ct lint --config ct.yaml
 
 ##@ Build Dependencies
 

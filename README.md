@@ -27,7 +27,7 @@ pie verifies that PVs are successfully provisioned on the specified nodes for th
 2. Then you can install it using Helm.
 
     ```sh
-    helm repo add pie
+    helm repo add pie https://topolvm.github.io/pie
     helm install pie --values values.yaml
     ```
 

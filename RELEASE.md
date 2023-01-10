@@ -122,6 +122,7 @@ You must change the version of Chart.yaml when making changes to the Helm Chart.
     ```console
     $ sed -r -i "s/version: [[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+/version: ${CHARTVERSION}/g" charts/pie/Chart.yaml
     $ sed -r -i "s/appVersion: [[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+/appVersion: ${APPVERSION}/g" charts/pie/Chart.yaml
+    $ sed -r -i "s/ghcr.io\/topolvm\/pie:[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+/ghcr.io\/topolvm\/pie:${APPVERSION}/g" charts/pie/Chart.yaml
     ```
 
 4. Edit `charts/pie/CHANGELOG.md` for the new version.
