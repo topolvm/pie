@@ -44,6 +44,15 @@ $ go get sigs.k8s.io/controller-runtime@v${VERSION}
 Read the [`controller-tools`'s release note](https://github.com/kubernetes-sigs/controller-tools/releases), and update to the newest version that is compatible with all supported kubernetes versions. If there are breaking changes, we should decide how to manage these changes.
 To change the version, edit `Makefile`. 
 
+#### Go
+
+Choose the same version of Go [used by the latest Kubernetes](https://github.com/kubernetes/kubernetes/blob/master/go.mod) supported by pie.
+
+Edit the following files.
+
+- go.mod
+- Dockerfile
+
 #### Depending tools
 
 The following tools do not depend on other software, use latest versions.
@@ -71,10 +80,6 @@ Then, please tidy up the dependencies.
 ```bash
 $ go mod tidy
 ```
-
-#### Golang version
-
-Update golang if necessary.
 
 #### Final check
 
