@@ -110,9 +110,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 .PHONY: ct-lint
 ct-lint: ## Lint and validate a chart.
 	docker run \
-		--network host \
 		--workdir /data \
-		--volume ~/.kube/config:/root/.kube/config:ro \
 		--volume $(shell pwd):/data \
 		quay.io/helmpack/chart-testing:v$(CHART_TESTING_VERSION) \
 		ct lint --config ct.yaml
