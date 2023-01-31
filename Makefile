@@ -108,7 +108,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 ##@ Chart Testing
 
 .PHONY: ct-lint
-ct-lint: # Lint and validate a chart.
+ct-lint: ## Lint and validate a chart.
 	docker run \
 		--rm \
 		--user $(shell id -u $(USER)) \
