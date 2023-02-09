@@ -7,6 +7,25 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.4.1] - 2023-02-10
+
+### Added
+
+- artifacthub ([#39](https://github.com/topolvm/pie/pull/39))
+
+### Changed
+
+- Specify go version by go-version-file ([#37](https://github.com/topolvm/pie/pull/37))
+- update a note describing how to maintain go version ([#38](https://github.com/topolvm/pie/pull/38))
+- Add Signed-off-by on the bump commit ([#44](https://github.com/topolvm/pie/pull/44))
+
+### Contributors
+
+- @bells17
+- @cupnes
+- @llamerada-jp
+- @toshipp
+
 ## [0.4.0] - 2022-12-05
 
 ### Added
@@ -86,7 +105,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/topolvm/pie/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/topolvm/pie/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/topolvm/pie/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/topolvm/pie/compare/v0.2.0...v0.3.0
