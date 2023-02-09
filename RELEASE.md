@@ -65,7 +65,7 @@ Bump version
 4. Commit the change and create a pull request:
 
     ```console
-    $ git commit -a -m "Bump version to $VERSION"
+    $ git commit -a -s -m "Bump version to $VERSION"
     $ git push -u origin bump-$VERSION
     ```
 
@@ -135,7 +135,7 @@ You must change the version of Chart.yaml when making changes to the Helm Chart.
 5. Commit the change and create a pull request:
 
     ```console
-    $ git commit -a -m "Bump chart version to $CHARTVERSION"
+    $ git commit -a -s -m "Bump chart version to $CHARTVERSION"
     $ git push -u origin bump-chart-$CHARTVERSION
     ```
 
