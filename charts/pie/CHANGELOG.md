@@ -7,6 +7,19 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.3.1] - 2023-02-10
+
+### Changed
+
+- artifacthub ([#39](https://github.com/topolvm/pie/pull/39))
+- Bump helm/chart-releaser-action from 1.4.1 to 1.5.0 ([#42](https://github.com/topolvm/pie/pull/42))
+- appVersion was changed to 0.4.1.
+
+### Contributors
+
+- @bells17
+- @toshipp
+
 ## [0.3.0] - 2022-12-05
 
 ### Changed
@@ -52,7 +65,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.0...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.1...HEAD
+[0.3.1]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.0...pie-chart-v0.3.1
 [0.3.0]: https://github.com/topolvm/pie/compare/pie-chart-v0.2.1...pie-chart-v0.3.0
 [0.2.1]: https://github.com/topolvm/pie/compare/pie-chart-v0.2.0...pie-chart-v0.2.1
 [0.2.0]: https://github.com/topolvm/pie/compare/pie-chart-v0.1.2...pie-chart-v0.2.0
