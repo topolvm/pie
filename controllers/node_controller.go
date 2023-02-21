@@ -189,13 +189,14 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 	job := &batchv1.CronJob{}
 	job.SetNamespace(r.namespace)
 	job.SetName(getCronJobName(nodeName, storageClass))
-	label := map[string]string{
-		constants.ProbeNodeLabelKey:         nodeName,
-		constants.ProbeStorageClassLabelKey: storageClass,
-	}
-	job.SetLabels(label)
 
 	op, err := ctrl.CreateOrUpdate(ctx, r.client, job, func() error {
+		label := map[string]string{
+			constants.ProbeNodeLabelKey:         nodeName,
+			constants.ProbeStorageClassLabelKey: storageClass,
+		}
+		job.SetLabels(label)
+
 		var controllerPod corev1.Pod
 		hostname, err := os.Hostname()
 		if err != nil {
