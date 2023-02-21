@@ -213,9 +213,12 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 
 		cronjob.Spec.ConcurrencyPolicy = batchv1.ForbidConcurrent
 		cronjob.Spec.Schedule = convertPeriodToCronSchedule(r.probePeriod)
+
+		var successfulJobsHistoryLimit = int32(0)
+		cronjob.Spec.SuccessfulJobsHistoryLimit = &successfulJobsHistoryLimit
+
 		// according this doc https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#jobspec-v1-batch,
 		// selector is set by the system
-		// job.Spec.JobTemplate.ObjectMeta.Labels = map[string]string{"name": "pie-probe"}
 
 		cronjob.Spec.JobTemplate.Spec.Template.SetLabels(label)
 
