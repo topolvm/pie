@@ -186,16 +186,16 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 	nodeCtrlLogger.Info("createOrUpdateJob")
 	defer nodeCtrlLogger.Info("createOrUpdateJob Finished")
 
-	job := &batchv1.CronJob{}
-	job.SetNamespace(r.namespace)
-	job.SetName(getCronJobName(nodeName, storageClass))
+	cronjob := &batchv1.CronJob{}
+	cronjob.SetNamespace(r.namespace)
+	cronjob.SetName(getCronJobName(nodeName, storageClass))
 
-	op, err := ctrl.CreateOrUpdate(ctx, r.client, job, func() error {
+	op, err := ctrl.CreateOrUpdate(ctx, r.client, cronjob, func() error {
 		label := map[string]string{
 			constants.ProbeNodeLabelKey:         nodeName,
 			constants.ProbeStorageClassLabelKey: storageClass,
 		}
-		job.SetLabels(label)
+		cronjob.SetLabels(label)
 
 		var controllerPod corev1.Pod
 		hostname, err := os.Hostname()
@@ -206,25 +206,25 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 		if err != nil {
 			return err
 		}
-		err = controllerutil.SetControllerReference(&controllerPod, job, r.client.Scheme())
+		err = controllerutil.SetControllerReference(&controllerPod, cronjob, r.client.Scheme())
 		if err != nil {
 			return err
 		}
 
-		job.Spec.ConcurrencyPolicy = batchv1.ForbidConcurrent
-		job.Spec.Schedule = convertPeriodToCronSchedule(r.probePeriod)
+		cronjob.Spec.ConcurrencyPolicy = batchv1.ForbidConcurrent
+		cronjob.Spec.Schedule = convertPeriodToCronSchedule(r.probePeriod)
 		// according this doc https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#jobspec-v1-batch,
 		// selector is set by the system
 		// job.Spec.JobTemplate.ObjectMeta.Labels = map[string]string{"name": "pie-probe"}
 
-		job.Spec.JobTemplate.Spec.Template.SetLabels(label)
+		cronjob.Spec.JobTemplate.Spec.Template.SetLabels(label)
 
-		if len(job.Spec.JobTemplate.Spec.Template.Spec.Containers) != 1 {
-			job.Spec.JobTemplate.Spec.Template.Spec.Containers = []corev1.Container{{}}
+		if len(cronjob.Spec.JobTemplate.Spec.Template.Spec.Containers) != 1 {
+			cronjob.Spec.JobTemplate.Spec.Template.Spec.Containers = []corev1.Container{{}}
 		}
 
 		volumeName := "genericvol"
-		container := &job.Spec.JobTemplate.Spec.Template.Spec.Containers[0]
+		container := &cronjob.Spec.JobTemplate.Spec.Template.Spec.Containers[0]
 		container.Name = constants.ProbeContainerName
 		container.Image = r.containerImage
 		container.VolumeMounts = []corev1.VolumeMount{
@@ -244,17 +244,17 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 
 		var userID int64 = 1001
 		var groupID int64 = 1001
-		job.Spec.JobTemplate.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{
+		cronjob.Spec.JobTemplate.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{
 			RunAsUser:  &userID,
 			RunAsGroup: &groupID,
 			FSGroup:    &groupID,
 		}
 
-		job.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyNever
+		cronjob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyNever
 		var periodSeconds int64 = 5
-		job.Spec.JobTemplate.Spec.Template.Spec.TerminationGracePeriodSeconds = &periodSeconds
+		cronjob.Spec.JobTemplate.Spec.Template.Spec.TerminationGracePeriodSeconds = &periodSeconds
 
-		job.Spec.JobTemplate.Spec.Template.Spec.Affinity = &corev1.Affinity{
+		cronjob.Spec.JobTemplate.Spec.Template.Spec.Affinity = &corev1.Affinity{
 			NodeAffinity: &corev1.NodeAffinity{
 				RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
 					NodeSelectorTerms: []corev1.NodeSelectorTerm{
@@ -272,7 +272,7 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 			},
 		}
 
-		job.Spec.JobTemplate.Spec.Template.Spec.Volumes = []corev1.Volume{
+		cronjob.Spec.JobTemplate.Spec.Template.Spec.Volumes = []corev1.Volume{
 			{
 				Name: volumeName,
 				VolumeSource: corev1.VolumeSource{
