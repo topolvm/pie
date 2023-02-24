@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"os"
 
@@ -178,8 +179,12 @@ func (r *NodeReconciler) deleteCronJob(ctx context.Context, cronJobName string) 
 	return nil
 }
 
-func convertPeriodToCronSchedule(period int) string {
-	return fmt.Sprintf("*/%d * * * *", period)
+func makeCronSchedule(storageClass, nodeName string, period int) string {
+	h := crc32.NewIEEE()
+	h.Write([]byte(storageClass))
+	h.Write([]byte(nodeName))
+
+	return fmt.Sprintf("%d-59/%d * * * *", h.Sum32()%uint32(period), period)
 }
 
 func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, nodeName string) error {
@@ -212,7 +217,7 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 		}
 
 		cronjob.Spec.ConcurrencyPolicy = batchv1.ForbidConcurrent
-		cronjob.Spec.Schedule = convertPeriodToCronSchedule(r.probePeriod)
+		cronjob.Spec.Schedule = makeCronSchedule(storageClass, nodeName, r.probePeriod)
 
 		var successfulJobsHistoryLimit = int32(0)
 		cronjob.Spec.SuccessfulJobsHistoryLimit = &successfulJobsHistoryLimit
