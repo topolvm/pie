@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/topolvm/pie/constants"
 	"github.com/topolvm/pie/controller"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,9 +81,13 @@ func (p *provisionObserver) getNodeNameAndStorageClass(ctx context.Context, podN
 	return pod.GetLabels()[constants.ProbeNodeLabelKey], pod.GetLabels()[constants.ProbeStorageClassLabelKey], nil
 }
 
-func (p *provisionObserver) deletePod(ctx context.Context, podName string) error {
-	var podForDelete corev1.Pod
-	err := p.client.Get(ctx, client.ObjectKey{Namespace: p.namespace, Name: podName}, &podForDelete)
+func isProbeJob(o metav1.OwnerReference) bool {
+	return o.Kind == "Job" && strings.HasPrefix(o.Name, constants.ProbeNamePrefix)
+}
+
+func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, podName string) error {
+	var pod corev1.Pod
+	err := p.client.Get(ctx, client.ObjectKey{Namespace: p.namespace, Name: podName}, &pod)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil
@@ -89,22 +95,30 @@ func (p *provisionObserver) deletePod(ctx context.Context, podName string) error
 		logger.Error(err, "failed to get pod", "pod", podName)
 		return err
 	}
-	uid := podForDelete.GetUID()
-	resourceVersion := podForDelete.GetResourceVersion()
-	cond := metav1.Preconditions{
-		UID:             &uid,
-		ResourceVersion: &resourceVersion,
-	}
-	err = p.client.Delete(ctx, &podForDelete, &client.DeleteOptions{
-		Preconditions: &cond,
-	})
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return nil
+
+	for _, ownerReference := range pod.GetOwnerReferences() {
+		if isProbeJob(ownerReference) {
+			var job batchv1.Job
+			err := p.client.Get(ctx, client.ObjectKey{Namespace: p.namespace, Name: ownerReference.Name}, &job)
+			if err != nil {
+				if apierrors.IsNotFound(err) {
+					continue
+				}
+				logger.Error(err, "failed to get job", "job", ownerReference.Name)
+				return err
+			}
+
+			err = p.client.Delete(ctx, &job, nil)
+			if err != nil {
+				if apierrors.IsNotFound(err) {
+					continue
+				}
+				logger.Error(err, "failed to delete job", "job", job.Name)
+				return err
+			}
 		}
-		logger.Error(err, "failed to delete pod", "pod", podName)
-		return err
 	}
+
 	return nil
 }
 
@@ -128,7 +142,7 @@ func (p *provisionObserver) check(ctx context.Context) {
 			p.countedFlag[podName] = struct{}{}
 			if t.Sub(registeredTime) >= p.createProbeThreshold {
 				p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
-				err := p.deletePod(ctx, podName)
+				err := p.deleteOwnerJobOfPod(ctx, podName)
 				if err != nil {
 					continue
 				}
@@ -139,7 +153,7 @@ func (p *provisionObserver) check(ctx context.Context) {
 			if time.Since(registeredTime) >= p.createProbeThreshold {
 				p.countedFlag[podName] = struct{}{}
 				p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
-				err := p.deletePod(ctx, podName)
+				err := p.deleteOwnerJobOfPod(ctx, podName)
 				if err != nil {
 					continue
 				}
@@ -147,6 +161,8 @@ func (p *provisionObserver) check(ctx context.Context) {
 		}
 	}
 }
+
+//+kubebuilder:rbac:namespace=default,groups=batch/v1,resources=jobs,verbs=get;list;watch;delete
 
 func (p *provisionObserver) Start(ctx context.Context) error {
 	ticker := time.NewTicker(time.Second)
