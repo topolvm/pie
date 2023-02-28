@@ -76,6 +76,15 @@ rules:
   - update
   - watch
 - apiGroups:
+  - batch/v1
+  resources:
+  - jobs
+  verbs:
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
   - ""
   resources:
   - pods

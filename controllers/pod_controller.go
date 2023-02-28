@@ -41,7 +41,7 @@ func NewPodReconciler(
 }
 
 func isProbePodName(s string) bool {
-	return strings.HasPrefix(s, constants.ProbePodNamePrefix)
+	return strings.HasPrefix(s, constants.ProbeNamePrefix)
 }
 
 //+kubebuilder:rbac:namespace=default,groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete

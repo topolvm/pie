@@ -153,7 +153,7 @@ func getCronJobName(nodeName, storageClass string) string {
 	if len(storageClass) > 18 {
 		storageClass = storageClass[:18]
 	}
-	return fmt.Sprintf("%s-%s-%s-%s", constants.ProbePodNamePrefix, nodeName, storageClass, hashedName[:6])
+	return fmt.Sprintf("%s-%s-%s-%s", constants.ProbeNamePrefix, nodeName, storageClass, hashedName[:6])
 }
 
 func (r *NodeReconciler) deleteCronJob(ctx context.Context, cronJobName string) error {
