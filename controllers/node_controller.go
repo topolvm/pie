@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"hash/crc32"
 	"io"
-	"os"
 
 	"github.com/topolvm/pie/constants"
 	batchv1 "k8s.io/api/batch/v1"
@@ -201,20 +200,6 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 			constants.ProbeStorageClassLabelKey: storageClass,
 		}
 		cronjob.SetLabels(label)
-
-		var controllerPod corev1.Pod
-		hostname, err := os.Hostname()
-		if err != nil {
-			return err
-		}
-		err = r.client.Get(ctx, client.ObjectKey{Namespace: r.namespace, Name: hostname}, &controllerPod)
-		if err != nil {
-			return err
-		}
-		err = controllerutil.SetControllerReference(&controllerPod, cronjob, r.client.Scheme())
-		if err != nil {
-			return err
-		}
 
 		cronjob.Spec.ConcurrencyPolicy = batchv1.ForbidConcurrent
 		cronjob.Spec.Schedule = makeCronSchedule(storageClass, nodeName, r.probePeriod)
