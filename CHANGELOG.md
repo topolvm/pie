@@ -7,6 +7,20 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.5.0] - 2023-03-02
+
+### Changed
+
+- controller: set CronJob.spec.SuccessfulJobsHistoryLimit to 0  ([#46](https://github.com/topolvm/pie/pull/46))
+- controller: vary start time of CronJob ([#47](https://github.com/topolvm/pie/pull/47))
+- observer: delete Job instead of Pod after create threshold ([#48](https://github.com/topolvm/pie/pull/48))
+- Remove ownerReference ([#49](https://github.com/topolvm/pie/pull/49))
+
+### Contributors
+
+- @toshipp
+- @daichimukai
+
 ## [0.4.1] - 2023-02-10
 
 ### Added
@@ -105,7 +119,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/topolvm/pie/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/topolvm/pie/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/topolvm/pie/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/topolvm/pie/compare/v0.3.0...v0.3.1
