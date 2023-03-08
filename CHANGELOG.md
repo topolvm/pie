@@ -7,6 +7,16 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.5.1] - 2023-03-08
+
+### Fixed
+
+- Fix k8s clinet.Delete() argument. ([#53](https://github.com/topolvm/pie/pull/53))
+
+### Contributors
+
+- @cupnes
+
 ## [0.5.0] - 2023-03-02
 
 ### Changed
@@ -119,7 +129,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/topolvm/pie/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/topolvm/pie/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/topolvm/pie/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/topolvm/pie/compare/v0.3.1...v0.4.0
