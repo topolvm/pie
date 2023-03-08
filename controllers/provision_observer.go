@@ -108,7 +108,7 @@ func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, podName str
 				return err
 			}
 
-			err = p.client.Delete(ctx, &job, nil)
+			err = p.client.Delete(ctx, &job)
 			if err != nil {
 				if apierrors.IsNotFound(err) {
 					continue
