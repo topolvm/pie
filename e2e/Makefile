@@ -1,10 +1,10 @@
-KUBERNETES_VERSION ?= 1.25
+KUBERNETES_VERSION ?= 1.26
 # The container version of kind must be with the digest.
 # ref. https://github.com/kubernetes-sigs/kind/releases
-KIND_NODE_VERSION := kindest/node:v1.25.3@sha256:f52781bc0d7a19fb6c405c2af83abfeb311f130707a0e219175677e366cc45d1
+KIND_NODE_VERSION := kindest/node:v1.26.3@sha256:61b92f38dff6ccc29969e7aa154d34e38b89443af1a2c14e6cfbd2df6419c66f
 KIND_CLUSTER_NAME := pie-test
-KIND_VERSION := v0.17.0
-HELM_VERSION := 3.10.2
+KIND_VERSION := v0.18.0
+HELM_VERSION := 3.11.2
 
 PROJECT_ROOT := $(shell git rev-parse --show-toplevel)
 BINDIR := $(PROJECT_ROOT)/bin
@@ -14,10 +14,10 @@ CURL := curl -sSLf
 KIND := $(BINDIR)/kind-$(KIND_VERSION)
 HELM := $(BINDIR)/helm-$(HELM_VERSION)
 
-ifeq ($(KUBERNETES_VERSION), 1.24)
-	KIND_NODE_VERSION := kindest/node:v1.24.7@sha256:577c630ce8e509131eab1aea12c022190978dd2f745aac5eb1fe65c0807eb315
-else ifeq ($(KUBERNETES_VERSION), 1.23)
-	KIND_NODE_VERSION := kindest/node:v1.23.13@sha256:ef453bb7c79f0e3caba88d2067d4196f427794086a7d0df8df4f019d5e336b61
+ifeq ($(KUBERNETES_VERSION), 1.25)
+	KIND_NODE_VERSION := kindest/node:v1.25.8@sha256:00d3f5314cc35327706776e95b2f8e504198ce59ac545d0200a89e69fce10b7f
+else ifeq ($(KUBERNETES_VERSION), 1.24)
+	KIND_NODE_VERSION := kindest/node:v1.24.12@sha256:1e12918b8bc3d4253bc08f640a231bb0d3b2c5a9b28aa3f2ca1aee93e1e8db16
 endif
 
 .PHONY: create-cluster
