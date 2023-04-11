@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"reflect"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -117,17 +118,23 @@ var _ = Describe("pie", func() {
 
 		stdout, _, err := kubectl("get", "node", "-o=jsonpath={.items[*].metadata.name}")
 		Expect(err).NotTo(HaveOccurred())
-		nodeLabelKey := string("node")
+		nodeLabelKey := "node"
 		nodeLabelValue := string(stdout)
 		nodeLabelPair := io_prometheus_client.LabelPair{Name: &nodeLabelKey, Value: &nodeLabelValue}
 
-		standardSCLabelKey := string("storage_class")
-		standardSCLabelValue := string("standard")
+		standardSCLabelKey := "storage_class"
+		standardSCLabelValue := "standard"
 		standardSCLabelPair := io_prometheus_client.LabelPair{Name: &standardSCLabelKey, Value: &standardSCLabelValue}
 
-		dummySCLabelKey := string("storage_class")
-		dummySCLabelValue := string("dummy")
+		dummySCLabelKey := "storage_class"
+		dummySCLabelValue := "dummy"
 		dummySCLabelPair := io_prometheus_client.LabelPair{Name: &dummySCLabelKey, Value: &dummySCLabelValue}
+
+		onTimeLabelKey := "on_time"
+		trueValue := "true"
+		falseValue := "false"
+		onTimeTrueLabelPair := io_prometheus_client.LabelPair{Name: &onTimeLabelKey, Value: &trueValue}
+		onTimeFalseLabelPair := io_prometheus_client.LabelPair{Name: &onTimeLabelKey, Value: &falseValue}
 
 		Eventually(func(g Gomega) {
 			resp, err := http.Get("http://localhost:8080/metrics")
@@ -138,11 +145,10 @@ var _ = Describe("pie", func() {
 			metricFamilies, err := parser.TextToMetricFamilies(resp.Body)
 			g.Expect(err).NotTo(HaveOccurred())
 
-			By("checking metrics for standard SC")
+			By("checking latency metrics have node and storage_class labels and the storage_class label value is standard")
 			for _, metricName := range []string{
 				"pie_io_write_latency_seconds",
 				"pie_io_read_latency_seconds",
-				"pie_create_probe_fast_total",
 			} {
 				g.Expect(metricName).Should(BeKeyOf(metricFamilies))
 				for _, metric := range metricFamilies[metricName].Metric {
@@ -151,11 +157,18 @@ var _ = Describe("pie", func() {
 				}
 			}
 
-			By("checking metrics for dummy SC")
-			g.Expect("pie_create_probe_slow_total").Should(BeKeyOf(metricFamilies))
-			for _, metric := range metricFamilies["pie_create_probe_slow_total"].Metric {
-				g.Expect(metric.Label).Should(ContainElement(&nodeLabelPair))
-				g.Expect(metric.Label).Should(ContainElement(&dummySCLabelPair))
+			By("checking pie_create_probe_total have on_time=true for standard SC or on_time=false for dummy SC")
+			Expect("pie_create_probe_total").Should(BeKeyOf(metricFamilies))
+			for _, metric := range metricFamilies["pie_create_probe_total"].Metric {
+				Expect(metric.Label).Should(Or(ContainElement(&standardSCLabelPair), ContainElement(&dummySCLabelPair)))
+				for _, label := range metric.Label {
+					switch {
+					case reflect.DeepEqual(label, &standardSCLabelPair):
+						Expect(metric.Label).Should(ContainElement(&onTimeTrueLabelPair))
+					case reflect.DeepEqual(label, &dummySCLabelPair):
+						Expect(metric.Label).Should(ContainElement(&onTimeFalseLabelPair))
+					}
+				}
 			}
 		}).Should(Succeed())
 

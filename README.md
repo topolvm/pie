@@ -42,13 +42,8 @@ IO latency of read.
 
 TYPE: gauge
 
-### `pie_create_probe_fast_total`
-The number of attempts that take less time between the creation of the Pod object and the creation of the container than the threshold.
-
-TYPE: counter
-
-### `pie_create_probe_slow_total`
-The number of attempts that take more time between the creation of the Pod object and the creation of the container than the threshold.
+### `pie_create_probe_total`
+The number of attempts that the creation of the Pod object and the creation of the container.
 
 TYPE: counter
 

@@ -141,18 +141,18 @@ func (p *provisionObserver) check(ctx context.Context) {
 		if ok {
 			p.countedFlag[podName] = struct{}{}
 			if t.Sub(registeredTime) >= p.createProbeThreshold {
-				p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
+				p.exporter.IncrementCreateProbeCount(nodeName, storageClass, false)
 				err := p.deleteOwnerJobOfPod(ctx, podName)
 				if err != nil {
 					continue
 				}
 			} else {
-				p.exporter.IncrementCreateProbeFastCount(nodeName, storageClass)
+				p.exporter.IncrementCreateProbeCount(nodeName, storageClass, true)
 			}
 		} else {
 			if time.Since(registeredTime) >= p.createProbeThreshold {
 				p.countedFlag[podName] = struct{}{}
-				p.exporter.IncrementCreateProbeSlowCount(nodeName, storageClass)
+				p.exporter.IncrementCreateProbeCount(nodeName, storageClass, false)
 				err := p.deleteOwnerJobOfPod(ctx, podName)
 				if err != nil {
 					continue
