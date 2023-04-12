@@ -12,15 +12,13 @@ const (
 
 type MetricsExporter interface {
 	SetLatency(node, storageClass string, readLatency, writeLatency float64)
-	IncrementCreateProbeFastCount(node string, storageClass string)
-	IncrementCreateProbeSlowCount(node string, storageClass string)
+	IncrementCreateProbeCount(node string, storageClass string, onTime bool)
 }
 
 type metricExporterImpl struct {
-	writeLatencyGauge    *prometheus.GaugeVec
-	readLatencyGauge     *prometheus.GaugeVec
-	createProbeFastCount *prometheus.CounterVec
-	createProbeSlowCount *prometheus.CounterVec
+	writeLatencyGauge *prometheus.GaugeVec
+	readLatencyGauge  *prometheus.GaugeVec
+	createProbeCount  *prometheus.CounterVec
 }
 
 func NewMetrics() MetricsExporter {
@@ -50,25 +48,15 @@ func (m *metricExporterImpl) registerMetrics() {
 
 	metrics.Registry.MustRegister(m.readLatencyGauge)
 
-	m.createProbeFastCount = prometheus.NewCounterVec(
+	m.createProbeCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: "pie",
-			Name:      "create_probe_fast_total",
-			Help:      "The number of attempts that take less time between the creation of the Pod object and the creation of the container than the threshold.",
+			Name:      "create_probe_total",
+			Help:      "The number of attempts that the creation of the Pod object and the creation of the container.",
 		},
-		[]string{"node", "storage_class"})
+		[]string{"node", "storage_class", "on_time"})
 
-	metrics.Registry.MustRegister(m.createProbeFastCount)
-
-	m.createProbeSlowCount = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Namespace: "pie",
-			Name:      "create_probe_slow_total",
-			Help:      "The number of attempts that take more time between the creation of the Pod object and the creation of the container than the threshold.",
-		},
-		[]string{"node", "storage_class"})
-
-	metrics.Registry.MustRegister(m.createProbeSlowCount)
+	metrics.Registry.MustRegister(m.createProbeCount)
 }
 
 func (m *metricExporterImpl) SetLatency(node string, storageClass string, readLatency, writeLatency float64) {
@@ -76,10 +64,10 @@ func (m *metricExporterImpl) SetLatency(node string, storageClass string, readLa
 	m.readLatencyGauge.WithLabelValues(node, storageClass).Set(readLatency)
 }
 
-func (m *metricExporterImpl) IncrementCreateProbeFastCount(node string, storageClass string) {
-	m.createProbeFastCount.WithLabelValues(node, storageClass).Inc()
-}
-
-func (m *metricExporterImpl) IncrementCreateProbeSlowCount(node string, storageClass string) {
-	m.createProbeSlowCount.WithLabelValues(node, storageClass).Inc()
+func (m *metricExporterImpl) IncrementCreateProbeCount(node string, storageClass string, onTime bool) {
+	onTimeStr := "false"
+	if onTime {
+		onTimeStr = "true"
+	}
+	m.createProbeCount.WithLabelValues(node, storageClass, onTimeStr).Inc()
 }

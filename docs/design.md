@@ -75,10 +75,10 @@ pie works as follows:
 
 ### Metrics design decision
 
-As explained in [README.md](../README.md#prometheus-metrics), metrics related to PV creation are output in the form of whether the PV creation was completed within a certain time (`create_probe_fast_total` or `create_probe_slow_total`), not the time taken for the creation.
+As explained in [README.md](../README.md#prometheus-metrics), metrics related to PV creation are output in the form of whether the PV creation was completed within a certain time (denoted as `on_time` label of `create_probe_total`), not the time taken for the creation.
 
 If you try to output the time taken to create a PV, the metrics would not be output until the PV is actually created.
 Then, if the PV cannot be created due to some problems, the metric would not be output, and
 you would not realize that there are some problems.
 
-Therefore, if the PV is not created within a certain time, `create_probe_slow_total` counter is incremented so that you can notice the problem even when the PV creation is completely stopped.
+Therefore, if the PV is not created within a certain time, `create_probe_total` counter with `on_time=false` is incremented so that you can notice the problem even when the PV creation is completely stopped.
