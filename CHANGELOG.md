@@ -7,6 +7,28 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.6.0] - 2023-04-13
+
+### Added
+
+- add a workflow job to check the do-not-merge label ([#56](https://github.com/topolvm/pie/pull/56))
+- add documentation of pie stop and start operations ([#57](https://github.com/topolvm/pie/pull/57))
+
+### Changed
+
+- Bump actions/setup-go from 3 to 4 ([#59](https://github.com/topolvm/pie/pull/59))
+- Update supporting Kubernetes (1.26) ([#60](https://github.com/topolvm/pie/pull/60))
+  - **BREAKING**: Kubernetes 1.23 is not supported.
+- change the spec of metrics ([#61](https://github.com/topolvm/pie/pull/61))
+  - **BREAKING**: The metrics `pie_create_probe_fast_total` and `pie_create_probe_slow_total` are deleted. Use `pie_create_probe_total`.
+
+### Contributors
+
+- @cupnes
+- @llamerada-jp
+- @peng225
+- @toshipp
+
 ## [0.5.1] - 2023-03-08
 
 ### Fixed
@@ -129,7 +151,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/topolvm/pie/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/topolvm/pie/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/topolvm/pie/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/topolvm/pie/compare/v0.4.0...v0.4.1
