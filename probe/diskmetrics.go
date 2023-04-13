@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"os"
 	"os/exec"
 	"strconv"
 )
@@ -22,26 +20,16 @@ func NewDiskMetrics(path string) DiskMetricsInterface {
 
 func execWrap(stdin []byte, command string, args ...string) ([]byte, error) {
 	c := exec.Command(command, args...)
-	c.Stderr = os.Stderr
 	if stdin != nil {
 		c.Stdin = bytes.NewReader(stdin)
 	}
-	stdout, err := c.StdoutPipe()
-	if err != nil {
-		return nil, err
+	var stdoutBuf, stderrBuf bytes.Buffer
+	c.Stdout = &stdoutBuf
+	c.Stderr = &stderrBuf
+	if err := c.Run(); err != nil {
+		return nil, fmt.Errorf("exec failed. stderr=%s, %w", stderrBuf.Bytes(), err)
 	}
-	if err := c.Start(); err != nil {
-		return nil, err
-	}
-	out, err := io.ReadAll(stdout)
-	if err != nil {
-		return nil, err
-	}
-	if err := c.Wait(); err != nil {
-		return nil, err
-	}
-
-	return out, nil
+	return stdoutBuf.Bytes(), nil
 }
 
 func parseFioResult(fioOutput []byte, property string) (float64, error) {
