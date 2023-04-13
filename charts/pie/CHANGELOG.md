@@ -7,6 +7,13 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.3.4] - 2023-04-13
+
+### Changed
+
+- Bump helm/chart-testing-action from 2.3.1 to 2.4.0 ([#58](https://github.com/topolvm/pie/pull/58))
+- appVersion was changed to 0.6.0.
+
 ## [0.3.3] - 2023-03-08
 
 ### Changed
@@ -85,7 +92,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.3...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.4...HEAD
+[0.3.4]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.3...pie-chart-v0.3.4
 [0.3.3]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.2...pie-chart-v0.3.3
 [0.3.2]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.1...pie-chart-v0.3.2
 [0.3.1]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.0...pie-chart-v0.3.1
