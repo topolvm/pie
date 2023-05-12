@@ -74,6 +74,10 @@ spec:
           - "--probe-period"
           - "{{ . }}"
           {{- end }}
+          {{- with .Values.controller.enablePProf }}
+          - "--enable-pprof"
+          - "{{ . }}"
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

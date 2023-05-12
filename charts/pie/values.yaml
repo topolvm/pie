@@ -61,3 +61,4 @@ controller:
   monitoringStorageClasses: []
   createProbeThreshold:
   nodeSelector:
+  enablePProf:

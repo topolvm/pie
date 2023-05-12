@@ -3,6 +3,8 @@ package cmd
 import (
 	"errors"
 	"flag"
+	"net/http"
+	"net/http/pprof"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -40,6 +42,7 @@ var (
 	controllerURL            string
 	probePeriod              int
 	createProbeThreshold     time.Duration
+	enablePProf              bool
 
 	opts zap.Options
 )
@@ -58,6 +61,7 @@ func init() {
 	flags.StringVar(&controllerURL, "controller-url", "", "The controller URL which probe pods access")
 	flags.IntVar(&probePeriod, "probe-period", 1, "The period[minute] for CronJob to create a probe pod.")
 	flags.DurationVar(&createProbeThreshold, "create-probe-threshold", time.Minute, "The threshold of probe creation.")
+	flags.BoolVar(&enablePProf, "enable-pprof", false, "Enable PProf function")
 	opts.Development = true
 
 	goflags := flag.NewFlagSet("klog", flag.ExitOnError)
@@ -170,6 +174,13 @@ func subMain() error {
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up ready check")
 		return err
+	}
+
+	if enablePProf {
+		if err := mgr.AddMetricsExtraHandler("/debug/pprof/", http.HandlerFunc(pprof.Index)); err != nil {
+			setupLog.Error(err, "unable to set up pprof endpoint")
+			return err
+		}
 	}
 
 	setupLog.Info("starting manager")
