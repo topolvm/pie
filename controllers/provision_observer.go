@@ -28,7 +28,10 @@ type provisionObserver struct {
 	podRegisteredTime    map[string]time.Time
 	podStartedTime       map[string]time.Time
 	countedFlag          map[string]struct{}
-	mu                   sync.Mutex
+	// mu protects above maps
+	mu          sync.Mutex
+	makeCheckCh chan struct{}
+	checkDoneCh chan struct{}
 }
 
 func newProvisionObserver(
@@ -45,6 +48,8 @@ func newProvisionObserver(
 		podRegisteredTime:    make(map[string]time.Time),
 		podStartedTime:       make(map[string]time.Time),
 		countedFlag:          make(map[string]struct{}),
+		makeCheckCh:          make(chan struct{}),
+		checkDoneCh:          make(chan struct{}),
 	}
 }
 
@@ -63,6 +68,9 @@ func (p *provisionObserver) setPodStartedTime(podName string, eventTime time.Tim
 }
 
 func (p *provisionObserver) deleteEventTime(podName string) {
+	p.makeCheckCh <- struct{}{}
+	<-p.checkDoneCh
+
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -170,12 +178,19 @@ func (p *provisionObserver) Start(ctx context.Context) error {
 	defer ticker.Stop()
 
 	for {
+		needNotify := false
 		select {
+		case <-p.makeCheckCh:
+			needNotify = true
 		case <-ticker.C:
 		case <-ctx.Done():
 			return nil
 		}
 
 		p.check(ctx)
+
+		if needNotify {
+			p.checkDoneCh <- struct{}{}
+		}
 	}
 }
