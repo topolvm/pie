@@ -171,7 +171,7 @@ func (p *provisionObserver) check(ctx context.Context) {
 	}
 }
 
-//+kubebuilder:rbac:namespace=default,groups=batch/v1,resources=jobs,verbs=get;list;watch;delete
+//+kubebuilder:rbac:namespace=default,groups=batch,resources=jobs,verbs=get;list;watch;delete
 
 func (p *provisionObserver) Start(ctx context.Context) error {
 	ticker := time.NewTicker(time.Second)
