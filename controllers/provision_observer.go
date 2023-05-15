@@ -108,7 +108,8 @@ func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, podName str
 				return err
 			}
 
-			err = p.client.Delete(ctx, &job)
+			policy := metav1.DeletePropagationBackground
+			err = p.client.Delete(ctx, &job, &client.DeleteOptions{PropagationPolicy: &policy})
 			if err != nil {
 				if apierrors.IsNotFound(err) {
 					continue
