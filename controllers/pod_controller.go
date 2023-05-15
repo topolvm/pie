@@ -11,6 +11,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -68,10 +69,13 @@ func (r *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 	err := r.client.Get(ctx, client.ObjectKey{Namespace: req.Namespace, Name: req.Name}, &pod)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			r.po.deleteEventTime(pod.Name)
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err
+	}
+
+	if !controllerutil.ContainsFinalizer(&pod, constants.PodFinalizerName) {
+		return ctrl.Result{}, nil
 	}
 
 	r.po.setPodRegisteredTime(pod.Name, pod.CreationTimestamp.Time)
@@ -84,6 +88,15 @@ func (r *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 			r.po.setPodStartedTime(pod.Name, status.State.Running.StartedAt.Time)
 		} else if status.State.Terminated != nil {
 			r.po.setPodStartedTime(pod.Name, status.State.Terminated.StartedAt.Time)
+		}
+	}
+
+	if !pod.DeletionTimestamp.IsZero() {
+		r.po.deleteEventTime(pod.Name)
+		controllerutil.RemoveFinalizer(&pod, constants.PodFinalizerName)
+		err := r.client.Update(ctx, &pod)
+		if err != nil {
+			return ctrl.Result{}, err
 		}
 	}
 

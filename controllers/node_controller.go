@@ -186,6 +186,16 @@ func makeCronSchedule(storageClass, nodeName string, period int) string {
 	return fmt.Sprintf("%d-59/%d * * * *", h.Sum32()%uint32(period), period)
 }
 
+func addPodFinalizer(spec *corev1.PodTemplateSpec) {
+	finalizers := spec.GetFinalizers()
+	for _, finalizer := range finalizers {
+		if finalizer == constants.PodFinalizerName {
+			return
+		}
+	}
+	spec.SetFinalizers(append(finalizers, constants.PodFinalizerName))
+}
+
 func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, nodeName string) error {
 	nodeCtrlLogger.Info("createOrUpdateJob")
 	defer nodeCtrlLogger.Info("createOrUpdateJob Finished")
@@ -211,6 +221,8 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 		// selector is set by the system
 
 		cronjob.Spec.JobTemplate.Spec.Template.SetLabels(label)
+
+		addPodFinalizer(&cronjob.Spec.JobTemplate.Spec.Template)
 
 		if len(cronjob.Spec.JobTemplate.Spec.Template.Spec.Containers) != 1 {
 			cronjob.Spec.JobTemplate.Spec.Template.Spec.Containers = []corev1.Container{{}}
