@@ -7,6 +7,24 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.6.1] - 2023-05-18
+
+### Added
+
+- Add pprof function ([#66](https://github.com/topolvm/pie/pull/66))
+
+### Changed
+
+- Embed stderr from running command in error ([#65](https://github.com/topolvm/pie/pull/65))
+
+### Fixed
+
+- Fix map growing ([#67](https://github.com/topolvm/pie/pull/67))
+
+### Contributors
+
+- @toshipp
+
 ## [0.6.0] - 2023-04-13
 
 ### Added
@@ -151,7 +169,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/topolvm/pie/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/topolvm/pie/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/topolvm/pie/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/topolvm/pie/compare/v0.4.1...v0.5.0
