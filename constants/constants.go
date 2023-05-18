@@ -3,6 +3,7 @@ package constants
 const (
 	ProbeNamePrefix           = "pie-probe"
 	ProbeContainerName        = "probe"
+	PodFinalizerName          = "pie.topolvm.io/pod"
 	NodeFinalizerName         = "pie.topolvm.io/node"
 	StorageClassFinalizerName = "pie.topolvm.io/storage-class"
 

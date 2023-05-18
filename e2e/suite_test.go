@@ -158,15 +158,17 @@ var _ = Describe("pie", func() {
 			}
 
 			By("checking pie_create_probe_total have on_time=true for standard SC or on_time=false for dummy SC")
-			Expect("pie_create_probe_total").Should(BeKeyOf(metricFamilies))
-			for _, metric := range metricFamilies["pie_create_probe_total"].Metric {
-				Expect(metric.Label).Should(Or(ContainElement(&standardSCLabelPair), ContainElement(&dummySCLabelPair)))
+			g.Expect("pie_create_probe_total").Should(BeKeyOf(metricFamilies))
+			metrics := metricFamilies["pie_create_probe_total"].Metric
+			g.Expect(metrics).Should(ContainElement(HaveField("Label", ContainElement(&standardSCLabelPair))))
+			g.Expect(metrics).Should(ContainElement(HaveField("Label", ContainElement(&dummySCLabelPair))))
+			for _, metric := range metrics {
 				for _, label := range metric.Label {
 					switch {
 					case reflect.DeepEqual(label, &standardSCLabelPair):
-						Expect(metric.Label).Should(ContainElement(&onTimeTrueLabelPair))
+						g.Expect(metric.Label).Should(ContainElement(&onTimeTrueLabelPair))
 					case reflect.DeepEqual(label, &dummySCLabelPair):
-						Expect(metric.Label).Should(ContainElement(&onTimeFalseLabelPair))
+						g.Expect(metric.Label).Should(ContainElement(&onTimeFalseLabelPair))
 					}
 				}
 			}
