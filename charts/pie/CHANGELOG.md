@@ -7,6 +7,24 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.3.5] - 2023-05-18
+
+### Added
+
+- Add pprof function ([#66](https://github.com/topolvm/pie/pull/66))
+
+### Changed
+
+- appVersion was changed to 0.6.1.
+
+### Fixed
+
+- Fix map growing ([#67](https://github.com/topolvm/pie/pull/67))
+
+### Contributors
+
+- @toshipp
+
 ## [0.3.4] - 2023-04-13
 
 ### Changed
@@ -92,7 +110,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.4...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.5...HEAD
+[0.3.5]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.4...pie-chart-v0.3.5
 [0.3.4]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.3...pie-chart-v0.3.4
 [0.3.3]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.2...pie-chart-v0.3.3
 [0.3.2]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.1...pie-chart-v0.3.2
