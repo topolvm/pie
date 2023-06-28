@@ -59,7 +59,7 @@ func NewNodeReconciler(
 
 //+kubebuilder:rbac:namespace=default,groups=batch,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:namespace=default,groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:groups=core,resources=nodes/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=core,resources=nodes/finalizers,verbs=update
 

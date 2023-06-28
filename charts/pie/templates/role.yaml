@@ -9,7 +9,6 @@ rules:
   - nodes
   verbs:
   - create
-  - delete
   - get
   - list
   - patch
