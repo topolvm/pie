@@ -7,6 +7,20 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.7.0] - 2023-07-07
+
+### Changed
+
+- support kubernetes 1.27 ([#70](https://github.com/topolvm/pie/pull/70))
+  - **BREAKING**: Kubernetes 1.24 is not supported.
+- Add an item to the check list for Kubernetes upgrade to ensure that t… ([#71](https://github.com/topolvm/pie/pull/71))
+- Change builder image version to golang:1.20-bullseye ([#74](https://github.com/topolvm/pie/pull/74))
+
+### Contributors
+
+- @cupnes
+- @peng225
+
 ## [0.6.1] - 2023-05-18
 
 ### Added
@@ -169,7 +183,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/topolvm/pie/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/topolvm/pie/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/topolvm/pie/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/topolvm/pie/compare/v0.5.0...v0.5.1
