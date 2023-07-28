@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/topolvm/pie/constants"
 	batchv1 "k8s.io/api/batch/v1"
-	storagev1 "k8s.io/api/storage/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -16,7 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-var _ = Describe("StorageClass controller", func() {
+var _ = Describe("Node controller", func() {
 	ctx := context.Background()
 	var stopFunc func()
 
@@ -62,13 +62,13 @@ var _ = Describe("StorageClass controller", func() {
 		time.Sleep(100 * time.Millisecond)
 	})
 
-	It("should set finalizer and then delete StorageClass successfully", func() {
+	It("should set finalizer and then delete CronJob successfully", func() {
 		By("confirming that the finalizer is set")
-		var storageClass storagev1.StorageClass
+		var node corev1.Node
 		Eventually(func(g Gomega) {
-			err := k8sClient.Get(ctx, client.ObjectKey{Name: "sc"}, &storageClass)
+			err := k8sClient.Get(ctx, client.ObjectKey{Name: "192.168.0.1"}, &node)
 			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(controllerutil.ContainsFinalizer(&storageClass, constants.StorageClassFinalizerName)).Should(BeTrue())
+			g.Expect(controllerutil.ContainsFinalizer(&node, constants.NodeFinalizerName)).Should(BeTrue())
 		}).Should(Succeed())
 
 		Eventually(func(g Gomega) {
@@ -78,19 +78,16 @@ var _ = Describe("StorageClass controller", func() {
 			g.Expect(cronJobList.Items).ShouldNot(BeEmpty())
 		}).Should(Succeed())
 
-		By("confirming that the StorageClass is deleted successfully")
-		err := k8sClient.Delete(ctx, &storageClass)
+		By("confirming that the CronJob is deleted successfully")
+		err := k8sClient.Delete(ctx, &node)
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(func(g Gomega) {
-			err := k8sClient.Get(ctx, client.ObjectKey{Name: "sc"}, &storageClass)
+			err := k8sClient.Get(ctx, client.ObjectKey{Name: "192.168.0.1"}, &node)
 			g.Expect(apierrors.IsNotFound(err)).Should(BeTrue())
 
 			var cronJobList batchv1.CronJobList
-			label := map[string]string{
-				"storage-class": "sc",
-			}
-			err = k8sClient.List(ctx, &cronJobList, client.MatchingLabels(label))
+			err = k8sClient.List(ctx, &cronJobList)
 			g.Expect(err).NotTo(HaveOccurred())
 			g.Expect(cronJobList.Items).Should(BeEmpty())
 		}).Should(Succeed())
