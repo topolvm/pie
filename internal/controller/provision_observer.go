@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/topolvm/pie/constants"
-	"github.com/topolvm/pie/controller"
+	"github.com/topolvm/pie/metrics"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -23,7 +23,7 @@ var (
 type provisionObserver struct {
 	client               client.Client
 	namespace            string
-	exporter             controller.MetricsExporter
+	exporter             metrics.MetricsExporter
 	createProbeThreshold time.Duration
 	podRegisteredTime    map[string]time.Time
 	podStartedTime       map[string]time.Time
@@ -37,7 +37,7 @@ type provisionObserver struct {
 func newProvisionObserver(
 	client client.Client,
 	namespace string,
-	exporter controller.MetricsExporter,
+	exporter metrics.MetricsExporter,
 	createProbeThreshold time.Duration,
 ) *provisionObserver {
 	return &provisionObserver{

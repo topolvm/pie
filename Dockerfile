@@ -14,11 +14,10 @@ RUN go mod download
 # Copy the go source
 COPY cmd cmd
 COPY constants constants
-COPY controller controller
 COPY internal internal
 COPY main.go main.go
+COPY metrics metrics
 COPY probe probe
-COPY runners runners
 COPY types types
 
 # Build

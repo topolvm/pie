@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/topolvm/pie/constants"
-	"github.com/topolvm/pie/controller"
+	"github.com/topolvm/pie/metrics"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -28,7 +28,7 @@ type PodReconciler struct {
 func NewPodReconciler(
 	client client.Client,
 	createProbeThreshold time.Duration,
-	exporter controller.MetricsExporter,
+	exporter metrics.MetricsExporter,
 	storageClasses []string,
 	namespace string,
 ) *PodReconciler {
