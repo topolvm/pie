@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/topolvm/pie/controller"
-	"github.com/topolvm/pie/controllers"
+	reconciler "github.com/topolvm/pie/internal/controller"
 	"github.com/topolvm/pie/runners"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -121,7 +121,7 @@ func subMain() error {
 			"probe period", probePeriod, "create probe threshold", createProbeThreshold)
 		return err
 	}
-	podReconciler := controllers.NewPodReconciler(
+	podReconciler := reconciler.NewPodReconciler(
 		mgr.GetClient(),
 		createProbeThreshold,
 		exporter,
@@ -139,7 +139,7 @@ func subMain() error {
 		setupLog.Error(err, "the controllerURL should be specified")
 		return err
 	}
-	nodeReconciler := controllers.NewNodeReconciler(
+	nodeReconciler := reconciler.NewNodeReconciler(
 		mgr.GetClient(),
 		containerImage,
 		namespace,
@@ -154,7 +154,7 @@ func subMain() error {
 		return err
 	}
 
-	storageClassReconciler := controllers.NewStorageClassReconciler(
+	storageClassReconciler := reconciler.NewStorageClassReconciler(
 		mgr.GetClient(),
 		namespace,
 		monitoringStorageClasses,
