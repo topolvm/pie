@@ -5,6 +5,7 @@ import "context"
 type DiskMetrics struct {
 	ReadLatency  float64
 	WriteLatency float64
+	ErrorNumber  int
 }
 
 type DiskMetricsInterface interface {
@@ -12,5 +13,5 @@ type DiskMetricsInterface interface {
 }
 
 type DiskInfoExporter interface {
-	Export(metrics DiskMetrics) error
+	Export(metrics *DiskMetrics) error
 }

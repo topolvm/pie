@@ -14,7 +14,7 @@ func SubMain(node string, measurePath string, storageClass string, serverURI str
 		return err
 	}
 
-	err = infoExporter.Export(*metrics)
+	err = infoExporter.Export(metrics)
 	if err != nil {
 		return err
 	}

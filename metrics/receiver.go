@@ -28,6 +28,7 @@ func (rh *receiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rh.metrics.SetLatency(receivedData.Node, receivedData.StorageClass, receivedData.ReadLatency, receivedData.WriteLatency)
+	rh.metrics.IncrementPerformanceProbeCount(receivedData.Node, receivedData.StorageClass, receivedData.PerformanceProbeSucceed)
 
 	fmt.Fprintf(w, "OK")
 }

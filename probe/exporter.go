@@ -28,12 +28,13 @@ func NewDiskInfoExporter(url string, node string, storageClass string) DiskInfoE
 	}
 }
 
-func (di *diskInfoImpl) Export(metrics DiskMetrics) error {
+func (di *diskInfoImpl) Export(metrics *DiskMetrics) error {
 	m := types.MetricsExchangeFormat{
-		Node:         di.node,
-		StorageClass: di.storageClass,
-		WriteLatency: metrics.WriteLatency,
-		ReadLatency:  metrics.ReadLatency,
+		Node:                    di.node,
+		StorageClass:            di.storageClass,
+		WriteLatency:            metrics.WriteLatency,
+		ReadLatency:             metrics.ReadLatency,
+		PerformanceProbeSucceed: metrics.ErrorNumber == 0,
 	}
 
 	s, err := json.Marshal(m)
