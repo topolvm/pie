@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"net/http"
@@ -8,9 +9,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/topolvm/pie/controller"
-	reconciler "github.com/topolvm/pie/internal/controller"
-	"github.com/topolvm/pie/runners"
+	"github.com/topolvm/pie/internal/controller"
+	"github.com/topolvm/pie/metrics"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -19,6 +19,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 var controllerCmd = &cobra.Command{
@@ -92,9 +93,8 @@ func subMain() error {
 		return err
 	}
 
-	exporter := controller.NewMetrics()
-	receiverRunner := runners.NewReceiverRunner(exporter)
-	err = mgr.Add(receiverRunner)
+	exporter := metrics.NewMetrics()
+	err = mgr.Add(makeReceiveRunner(exporter))
 	if err != nil {
 		setupLog.Error(err, "unable to start receiverRunner")
 		return err
@@ -121,7 +121,7 @@ func subMain() error {
 			"probe period", probePeriod, "create probe threshold", createProbeThreshold)
 		return err
 	}
-	podReconciler := reconciler.NewPodReconciler(
+	podReconciler := controller.NewPodReconciler(
 		mgr.GetClient(),
 		createProbeThreshold,
 		exporter,
@@ -139,7 +139,7 @@ func subMain() error {
 		setupLog.Error(err, "the controllerURL should be specified")
 		return err
 	}
-	nodeReconciler := reconciler.NewNodeReconciler(
+	nodeReconciler := controller.NewNodeReconciler(
 		mgr.GetClient(),
 		containerImage,
 		namespace,
@@ -154,7 +154,7 @@ func subMain() error {
 		return err
 	}
 
-	storageClassReconciler := reconciler.NewStorageClassReconciler(
+	storageClassReconciler := controller.NewStorageClassReconciler(
 		mgr.GetClient(),
 		namespace,
 		monitoringStorageClasses,
@@ -190,4 +190,24 @@ func subMain() error {
 	}
 
 	return nil
+}
+
+func makeReceiveRunner(exporter metrics.MetricsExporter) manager.Runnable {
+	return manager.RunnableFunc(func(ctx context.Context) error {
+		handler := metrics.NewReceiver(exporter)
+		s := &http.Server{
+			Addr:           ":8082",
+			Handler:        handler,
+			ReadTimeout:    10 * time.Second,
+			WriteTimeout:   10 * time.Second,
+			MaxHeaderBytes: 1 << 20,
+		}
+
+		go func() {
+			<-ctx.Done()
+			s.Close()
+		}()
+
+		return s.ListenAndServe()
+	})
 }
