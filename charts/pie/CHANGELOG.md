@@ -7,6 +7,12 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.4.1] - 2023-08-09
+
+### Changed
+
+- appVersion was changed to 0.7.1.
+
 ## [0.4.0] - 2023-07-07
 
 ### Changed
@@ -121,7 +127,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/pie-chart-v0.4.0...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/pie-chart-v0.4.1...HEAD
+[0.4.1]: https://github.com/topolvm/pie/compare/pie-chart-v0.4.0...pie-chart-v0.4.1
 [0.4.0]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.5...pie-chart-v0.4.0
 [0.3.5]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.4...pie-chart-v0.3.5
 [0.3.4]: https://github.com/topolvm/pie/compare/pie-chart-v0.3.3...pie-chart-v0.3.4
