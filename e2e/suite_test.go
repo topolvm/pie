@@ -136,6 +136,9 @@ var _ = Describe("pie", func() {
 		onTimeTrueLabelPair := io_prometheus_client.LabelPair{Name: &onTimeLabelKey, Value: &trueValue}
 		onTimeFalseLabelPair := io_prometheus_client.LabelPair{Name: &onTimeLabelKey, Value: &falseValue}
 
+		succeedLabelKey := "succeed"
+		succeedTrueLabelPair := io_prometheus_client.LabelPair{Name: &succeedLabelKey, Value: &trueValue}
+
 		Eventually(func(g Gomega) {
 			resp, err := http.Get("http://localhost:8080/metrics")
 			g.Expect(err).NotTo(HaveOccurred())
@@ -169,6 +172,19 @@ var _ = Describe("pie", func() {
 						g.Expect(metric.Label).Should(ContainElement(&onTimeTrueLabelPair))
 					case reflect.DeepEqual(label, &dummySCLabelPair):
 						g.Expect(metric.Label).Should(ContainElement(&onTimeFalseLabelPair))
+					}
+				}
+			}
+
+			By("checking pie_performance_probe_total with succeed=true is more than zero for standard SC")
+			g.Expect("pie_performance_probe_total").Should(BeKeyOf(metricFamilies))
+			metrics = metricFamilies["pie_performance_probe_total"].Metric
+			g.Expect(metrics).Should(ContainElement(HaveField("Label", ContainElement(&standardSCLabelPair))))
+			for _, metric := range metrics {
+				for _, label := range metric.Label {
+					if reflect.DeepEqual(label, &standardSCLabelPair) {
+						g.Expect(metric.Label).Should(ContainElement(&succeedTrueLabelPair))
+						g.Expect(metric.Counter).ShouldNot(BeZero())
 					}
 				}
 			}

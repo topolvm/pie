@@ -47,6 +47,11 @@ The number of attempts that the creation of the Pod object and the creation of t
 
 TYPE: counter
 
+### `pie_performance_probe_total`
+The number of attempts that the creation of the Pod object and the creation of the container.
+
+TYPE: counter
+
 ## Contributing
 
 ### Test It Out

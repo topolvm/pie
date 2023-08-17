@@ -32,7 +32,7 @@ func execWrap(stdin []byte, command string, args ...string) ([]byte, error) {
 	return stdoutBuf.Bytes(), nil
 }
 
-func parseFioResult(fioOutput []byte, property string) (float64, error) {
+func parseFioLatency(fioOutput []byte, property string) (float64, error) {
 	jqOut, err := execWrap(
 		fioOutput,
 		"jq",
@@ -51,6 +51,26 @@ func parseFioResult(fioOutput []byte, property string) (float64, error) {
 
 	// actualNumber is nano-seconds, so convert it to seconds order
 	return actualNumber / 1_000_000_000, nil
+}
+
+func parseFioError(fioOutput []byte) (int, error) {
+	jqOut, err := execWrap(
+		fioOutput,
+		"jq",
+		".jobs[0].error",
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	stringJqOut := string(jqOut)
+
+	actualNumber, err := strconv.ParseInt(stringJqOut[0:len(stringJqOut)-1], 0, 0)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(actualNumber), nil
 }
 
 func (mtr *diskMetricsImpl) GetMetrics(ctx context.Context) (*DiskMetrics, error) {
@@ -73,12 +93,17 @@ func (mtr *diskMetricsImpl) GetMetrics(ctx context.Context) (*DiskMetrics, error
 	}
 
 	var metrics DiskMetrics
-	metrics.ReadLatency, err = parseFioResult(fioStdout, "read")
+	metrics.ReadLatency, err = parseFioLatency(fioStdout, "read")
 	if err != nil {
 		return nil, err
 	}
 
-	metrics.WriteLatency, err = parseFioResult(fioStdout, "write")
+	metrics.WriteLatency, err = parseFioLatency(fioStdout, "write")
+	if err != nil {
+		return nil, err
+	}
+
+	metrics.ErrorNumber, err = parseFioError(fioStdout)
 	if err != nil {
 		return nil, err
 	}
