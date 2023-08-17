@@ -7,6 +7,16 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 ## [Unreleased]
 
+## [0.7.2] - 2023-08-17
+
+### Added
+
+- add metrics ([#84](https://github.com/topolvm/pie/pull/84))
+
+### Contributors
+
+- @toshipp
+
 ## [0.7.1] - 2023-08-09
 
 ### Changed
@@ -197,7 +207,8 @@ This file itself is based on [Keep a CHANGELOG](https://keepachangelog.com/en/0.
 
 This is the first release.
 
-[Unreleased]: https://github.com/topolvm/pie/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/topolvm/pie/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/topolvm/pie/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/topolvm/pie/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/topolvm/pie/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/topolvm/pie/compare/v0.6.0...v0.6.1
