@@ -22,10 +22,9 @@ Choose the next version and check the [release note](https://kubernetes.io/docs/
 
 To change the version, edit the following files.
 
-- `Makefile`
-- `README.md`
-- `e2e/Makefile`
 - `.github/workflows/e2e.yaml`
+- `README.md`
+- `versions.mk`
 
 We should also update go.mod by the following commands. Please note that Kubernetes v1 corresponds with v0 for the release tags. For example, v1.17.2 corresponds with the v0.17.2 tag.
 
@@ -42,7 +41,7 @@ $ go get sigs.k8s.io/controller-runtime@v${VERSION}
 ```
 
 Read the [`controller-tools`'s release note](https://github.com/kubernetes-sigs/controller-tools/releases), and update to the newest version that is compatible with all supported kubernetes versions. If there are breaking changes, we should decide how to manage these changes.
-To change the version, edit `Makefile`. 
+To change the version, edit `versions.mk`.
 
 #### Go
 
@@ -50,21 +49,16 @@ Choose the same version of Go [used by the latest Kubernetes](https://github.com
 
 Edit the following files.
 
-- go.mod
-- Dockerfile
+- `go.mod`
+- `Dockerfile`
 
 #### Depending tools
 
 The following tools do not depend on other software, use latest versions.
+To change their versions, edit `versions.mk`.
 - [kind](https://github.com/kubernetes-sigs/kind/releases)
-  - To change the version, edit the following files.
-    - `e2e/Makefile`
 - [helm](https://github.com/helm/helm/releases)
-  - To change the version, edit the following files.
-    - `e2e/Makefile`
 - [kustomize](https://github.com/kubernetes-sigs/kustomize/releases)
-  - To change the version, edit the following files.
-    - `Makefile`
 
 #### Depending modules
 
@@ -90,4 +84,4 @@ $ make generate
 
 #### Final check
 
-`git grep <the kubernetes version which support will be dropped>`, `git grep image:`, and `git grep -i VERSION` might help to avoid overlooking necessary changes.
+`git grep <the kubernetes version which support will be dropped>`, `git grep image:`, `git grep -i VERSION` and looking `versions.mk` might help to avoid overlooking necessary changes.
