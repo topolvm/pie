@@ -1,12 +1,13 @@
+CHART_TESTING_VERSION := 3.7.1
+CONTROLLER_TOOLS_VERSION := v0.12.0
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # NOTE: the suffix .x means wildcard match so specifying the latest patch version.
 ENVTEST_K8S_VERSION := 1.27.x
-CHART_TESTING_VERSION := 3.7.1
-KUSTOMIZE_VERSION := v5.0.3
-CONTROLLER_TOOLS_VERSION := v0.12.0
-KUBERNETES_VERSION := 1.27
-KIND_VERSION := v0.19.0
 HELM_VERSION := 3.12.0
+KIND_VERSION := v0.19.0
+# It is set by CI using the environment variable, use conditional assignment.
+KUBERNETES_VERSION ?= 1.27
+KUSTOMIZE_VERSION := v5.0.3
 
 # The container version of kind must be with the digest.
 # ref. https://github.com/kubernetes-sigs/kind/releases
