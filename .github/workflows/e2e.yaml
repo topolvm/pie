@@ -25,5 +25,5 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
-      - run: make -C e2e create-cluster
-      - run: make -C e2e test
+      - run: make -C test/e2e create-cluster
+      - run: make -C test/e2e test

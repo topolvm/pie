@@ -62,6 +62,6 @@ TYPE: counter
 
 2. Run e2e test on the local cluster.
     ```sh
-    make -C e2e create-cluster
-    make -C e2e test
+    make -C test/e2e create-cluster
+    make -C test/e2e test
     ```
