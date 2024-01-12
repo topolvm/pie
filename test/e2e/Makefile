@@ -1,4 +1,4 @@
-include ../versions.mk
+include ../../versions.mk
 
 PROJECT_ROOT := $(shell git rev-parse --show-toplevel)
 BINDIR := $(PROJECT_ROOT)/bin
@@ -12,10 +12,10 @@ KIND_CLUSTER_NAME := pie-test
 .PHONY: create-cluster
 create-cluster: $(KIND) $(HELM)
 	$(KIND) create cluster --name $(KIND_CLUSTER_NAME) --image $(KIND_NODE_VERSION)
-	$(MAKE) -C ../ docker-build IMG=pie:dev
+	$(MAKE) -C ../../ docker-build IMG=pie:dev
 	$(KIND) load docker-image pie:dev --name $(KIND_CLUSTER_NAME)
 	$(MAKE) $(KUBECONFIG)
-	KUBECONFIG=$(KUBECONFIG) $(HELM) install --create-namespace -n e2e pie ../charts/pie/ -f values.yaml
+	KUBECONFIG=$(KUBECONFIG) $(HELM) install --create-namespace -n e2e pie ../../charts/pie/ -f values.yaml
 
 .PHONY: test
 test: $(KUBECONFIG)

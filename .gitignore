@@ -28,4 +28,4 @@ testbin/*
 pie
 !pie/
 
-e2e/.kubeconfig
+test/e2e/.kubeconfig

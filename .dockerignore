@@ -5,5 +5,5 @@ bin/
 charts/
 config/
 docs/
-e2e/
+test/
 testbin/
