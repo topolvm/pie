@@ -20,4 +20,13 @@ resources:
   kind: StorageClass
   path: k8s.io/api/storage/v1
   version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: topolvm.io
+  group: pie
+  kind: PieProbe
+  path: github.com/topolvm/pie/api/pie/v1alpha1
+  version: v1alpha1
 version: "3"

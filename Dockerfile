@@ -12,6 +12,7 @@ COPY go.sum go.sum
 RUN go mod download
 
 # Copy the go source
+COPY api api
 COPY cmd cmd
 COPY constants constants
 COPY internal internal
