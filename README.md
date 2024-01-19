@@ -43,12 +43,42 @@ IO latency of read.
 TYPE: gauge
 
 ### `pie_create_probe_total`
-The number of attempts that the creation of the Pod object and the creation of the container.
+The number of attempts of the creation of the Pod object and the creation of the container.
 
 TYPE: counter
 
 ### `pie_performance_probe_total`
-The number of attempts that the creation of the Pod object and the creation of the container.
+The number of attempts of performing the IO benchmarks.
+
+TYPE: counter
+
+### `pie_io_write_latency_on_mount_probe_seconds`
+
+_Experimental metrics._ IO latency of write, benchmarked on mount-probe Pods.
+
+TYPE: gauge
+
+### `pie_io_read_latency_on_mount_probe_seconds`
+
+_Experimental metrics._ IO latency of read, benchmarked on mount-probe Pods.
+
+TYPE: gauge
+
+### `pie_mount_probe_total`
+
+_Experimental metrics._ The number of attempts of the creation of the mount-probe Pod object and the creation of the container.
+
+TYPE: counter
+
+### `pie_performance_on_mount_probe_total`
+
+_Experimental metrics._ The number of attempts of performing the IO benchmarks on mount-probe Pods.
+
+TYPE: counter
+
+### `pie_provision_probe_total`
+
+_Experimental metrics._ The number of attempts of the creation of the provision-probe Pod object and the creation of the container.
 
 TYPE: counter
 
