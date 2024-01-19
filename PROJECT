@@ -5,6 +5,7 @@
 domain: topolvm.io
 layout:
 - go.kubebuilder.io/v4
+multigroup: true
 projectName: pie
 repo: github.com/topolvm/pie
 resources:
