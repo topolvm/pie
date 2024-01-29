@@ -4,10 +4,10 @@ import (
 	"context"
 )
 
-func SubMain(node string, measurePath string, storageClass string, serverURI string) error {
+func SubMain(pieProbeName string, node string, measurePath string, storageClass string, serverURI string) error {
 	context := context.Background()
 	diskMetrics := NewDiskMetrics(measurePath)
-	infoExporter := NewDiskInfoExporter(serverURI, node, storageClass)
+	infoExporter := NewDiskInfoExporter(serverURI, pieProbeName, node, storageClass)
 
 	metrics, err := diskMetrics.GetMetrics(context)
 	if err != nil {

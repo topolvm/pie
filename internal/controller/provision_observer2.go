@@ -146,7 +146,11 @@ func (p *provisionObserver2) deleteOwnerJobOfPod(ctx context.Context, namespace,
 }
 
 func (p *provisionObserver2) incrementProbeCount(pieProbeName, podName, nodeName, storageClass string, onTime bool) {
-	p.exporter.IncrementProvisionProbeCount(pieProbeName, storageClass, onTime)
+	if strings.HasPrefix(podName, constants.ProvisionProbeNamePrefix) { // ProvisionProbe
+		p.exporter.IncrementProvisionProbeCount(pieProbeName, storageClass, onTime)
+	} else if strings.HasPrefix(podName, constants.MountProbeNamePrefix) { // MountProbe
+		p.exporter.IncrementMountProbeCount(pieProbeName, nodeName, storageClass, onTime)
+	}
 }
 
 func (p *provisionObserver2) check(ctx context.Context) {

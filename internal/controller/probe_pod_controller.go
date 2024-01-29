@@ -49,7 +49,8 @@ func NewProbePodReconciler(
 func (r *ProbePodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	if !strings.HasPrefix(req.Name, constants.ProvisionProbeNamePrefix) {
+	if !strings.HasPrefix(req.Name, constants.ProvisionProbeNamePrefix) &&
+		!strings.HasPrefix(req.Name, constants.MountProbeNamePrefix) {
 		return ctrl.Result{}, nil
 	}
 

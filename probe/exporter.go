@@ -11,6 +11,7 @@ import (
 
 type diskInfoImpl struct {
 	url          string
+	pieProbeName string
 	node         string
 	storageClass string
 }
@@ -20,9 +21,10 @@ const (
 	retryIntervalSec = 3
 )
 
-func NewDiskInfoExporter(url string, node string, storageClass string) DiskInfoExporter {
+func NewDiskInfoExporter(url string, pieProbeName string, node string, storageClass string) DiskInfoExporter {
 	return &diskInfoImpl{
 		url:          url,
+		pieProbeName: pieProbeName,
 		node:         node,
 		storageClass: storageClass,
 	}
@@ -30,6 +32,7 @@ func NewDiskInfoExporter(url string, node string, storageClass string) DiskInfoE
 
 func (di *diskInfoImpl) Export(metrics *DiskMetrics) error {
 	m := types.MetricsExchangeFormat{
+		PieProbeName:            di.pieProbeName,
 		Node:                    di.node,
 		StorageClass:            di.storageClass,
 		WriteLatency:            metrics.WriteLatency,
