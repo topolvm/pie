@@ -1,0 +1,38 @@
+---
+apiVersion: pie.topolvm.io/v1alpha1
+kind: PieProbe
+metadata:
+  name: pie-probe-standard-sc
+  namespace: e2e
+spec:
+  monitoringStorageClass: standard
+  containerImage: pie:dev
+  controllerUrl: http://pie.e2e.svc:8082
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: kubernetes.io/hostname
+        operator: In
+        values:
+        - pie-test-control-plane
+  probePeriod: 1
+  probeThreshold: 10s
+---
+apiVersion: pie.topolvm.io/v1alpha1
+kind: PieProbe
+metadata:
+  name: pie-probe-dummy-sc
+  namespace: e2e
+spec:
+  monitoringStorageClass: dummy
+  containerImage: pie:dev
+  controllerUrl: http://pie.e2e.svc:8082
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: kubernetes.io/hostname
+        operator: In
+        values:
+        - pie-test-control-plane
+  probePeriod: 1
+  probeThreshold: 10s
