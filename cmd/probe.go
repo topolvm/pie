@@ -21,7 +21,8 @@ var probeCmd = &cobra.Command{
 			probeConfig.nodeName,
 			probeConfig.fioFilename,
 			probeConfig.storageClass,
-			probeConfig.controllerAddr)
+			probeConfig.controllerAddr,
+		)
 	},
 }
 
@@ -32,12 +33,21 @@ var probeConfig struct {
 	nodeName       string
 }
 
+var provisionProbeCmd = &cobra.Command{
+	Use: "provision-probe",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Nothing to do
+		return nil
+	},
+}
+
 func init() {
 	fs := probeCmd.Flags()
 	fs.StringVar(&probeConfig.controllerAddr, "destination-address", "http://localhost:8080", "metrics aggregator's address")
 	fs.StringVar(&probeConfig.storageClass, "storage-class", "", "target StorageClass name")
 	fs.StringVar(&probeConfig.fioFilename, "path", "/test", "target I/O test directory path")
 	fs.StringVar(&probeConfig.nodeName, "node-name", "", "node name")
-
 	rootCmd.AddCommand(probeCmd)
+
+	rootCmd.AddCommand(provisionProbeCmd)
 }

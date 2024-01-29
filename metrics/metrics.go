@@ -14,6 +14,7 @@ type MetricsExporter interface {
 	SetLatency(node, storageClass string, readLatency, writeLatency float64)
 	IncrementCreateProbeCount(node string, storageClass string, onTime bool)
 	IncrementPerformanceProbeCount(node string, storageClass string, succeed bool)
+	IncrementProvisionProbeCount(pieProbeName string, storageClass string, onTime bool)
 }
 
 type metricExporterImpl struct {
@@ -21,6 +22,7 @@ type metricExporterImpl struct {
 	readLatencyGauge      *prometheus.GaugeVec
 	createProbeCount      *prometheus.CounterVec
 	performanceProbeCount *prometheus.CounterVec
+	provisionProbeCount   *prometheus.CounterVec
 }
 
 func NewMetrics() MetricsExporter {
@@ -69,6 +71,16 @@ func (m *metricExporterImpl) registerMetrics() {
 		[]string{"node", "storage_class", "succeed"})
 
 	metrics.Registry.MustRegister(m.performanceProbeCount)
+
+	m.provisionProbeCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: "pie",
+			Name:      "provision_probe_total",
+			Help:      "The number of attempts that the provision of the Pod object and the creation of the container.",
+		},
+		[]string{"pie_probe_name", "storage_class", "on_time"})
+
+	metrics.Registry.MustRegister(m.provisionProbeCount)
 }
 
 func (m *metricExporterImpl) SetLatency(node string, storageClass string, readLatency, writeLatency float64) {
@@ -90,4 +102,12 @@ func (m *metricExporterImpl) IncrementPerformanceProbeCount(node string, storage
 		succeedStr = "true"
 	}
 	m.performanceProbeCount.WithLabelValues(node, storageClass, succeedStr).Inc()
+}
+
+func (m *metricExporterImpl) IncrementProvisionProbeCount(pieProbeName string, storageClass string, onTime bool) {
+	onTimeStr := "false"
+	if onTime {
+		onTimeStr = "true"
+	}
+	m.provisionProbeCount.WithLabelValues(pieProbeName, storageClass, onTimeStr).Inc()
 }

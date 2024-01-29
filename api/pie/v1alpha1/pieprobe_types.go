@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -12,8 +13,15 @@ type PieProbeSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of PieProbe. Edit pieprobe_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="monitoringStorageClass is immutable"
+	MonitoringStorageClass string `json:"monitoringStorageClass,omitempty"`
+
+	ContainerImage string              `json:"containerImage,omitempty"`
+	ControllerUrl  string              `json:"controllerUrl,omitempty"`
+	NodeSelector   corev1.NodeSelector `json:"nodeSelector,omitempty"`
+	ProbePeriod    int                 `json:"probePeriod,omitempty"`
+	ProbeThreshold string              `json:"probeThreshold,omitempty"`
 }
 
 // PieProbeStatus defines the observed state of PieProbe

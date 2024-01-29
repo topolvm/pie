@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- pie_v1alpha1_pieprobe.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

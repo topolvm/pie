@@ -1,0 +1,19 @@
+apiVersion: pie.topolvm.io/v1alpha1
+kind: PieProbe
+metadata:
+  labels:
+    app.kubernetes.io/name: pieprobe
+    app.kubernetes.io/instance: pieprobe-sample
+    app.kubernetes.io/part-of: pie
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: pie
+  name: pieprobe-sample
+  namespace: pie-system
+spec:
+  # TODO(user): Add fields here
+  monitoringStorageClasses:
+    - topolvm-provisioner
+  containerImage: "ghcr.io/topolvm/pie:0.7.2"
+  controllerUrl: http://pie.pie-system.svc:8082
+  nodeSelector: "kubernetes.io/hostname in (10.69.0.4)"
+  probePeriod: 5

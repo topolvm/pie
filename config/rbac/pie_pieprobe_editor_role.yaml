@@ -1,0 +1,31 @@
+# permissions for end users to edit pieprobes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: pieprobe-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: pie
+    app.kubernetes.io/part-of: pie
+    app.kubernetes.io/managed-by: kustomize
+  name: pieprobe-editor-role
+rules:
+- apiGroups:
+  - pie.topolvm.io
+  resources:
+  - pieprobes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pie.topolvm.io
+  resources:
+  - pieprobes/status
+  verbs:
+  - get
