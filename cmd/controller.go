@@ -17,9 +17,12 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 var controllerCmd = &cobra.Command{
@@ -79,14 +82,28 @@ func init() {
 func subMain() error {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
+	webhookServer := webhook.NewServer(webhook.Options{Port: 9443})
+	metricsOption := metricsserver.Options{
+		BindAddress: metricsAddr,
+	}
+	if enablePProf {
+		metricsOption.ExtraHandlers = map[string]http.Handler{
+			"/debug/pprof/": http.HandlerFunc(pprof.Index),
+		}
+	}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
+		Metrics:                metricsOption,
+		WebhookServer:          webhookServer,
 		HealthProbeBindAddress: healthProbeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "650e0359.topolvm.io", // This is just a unique string. The value itself has no meaning.
-		Namespace:              namespace,
+		Cache: cache.Options{
+			DefaultNamespaces: map[string]cache.Config{
+				namespace: {},
+			},
+		},
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -174,13 +191,6 @@ func subMain() error {
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up ready check")
 		return err
-	}
-
-	if enablePProf {
-		if err := mgr.AddMetricsExtraHandler("/debug/pprof/", http.HandlerFunc(pprof.Index)); err != nil {
-			setupLog.Error(err, "unable to set up pprof endpoint")
-			return err
-		}
 	}
 
 	setupLog.Info("starting manager")
