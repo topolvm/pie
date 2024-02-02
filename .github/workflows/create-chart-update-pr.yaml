@@ -34,7 +34,7 @@ jobs:
             git switch -c bump-chart-${{ inputs.chart-version }}
       - name: "Update files"
         run: |
-          sed -r -i "s/version: [[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+/version: {{ inputs.chart-version }}/g" charts/pie/Chart.yaml
+          sed -r -i "s/version: [[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+/version: ${{ inputs.chart-version }}/g" charts/pie/Chart.yaml
           sed -r -i "s/appVersion: [[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+/appVersion: ${{ inputs.app-version }}/g" charts/pie/Chart.yaml
           sed -r -i "s/ghcr.io\/topolvm\/pie:[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+/ghcr.io\/topolvm\/pie:${{ inputs.app-version }}/g" charts/pie/Chart.yaml
       - name: Issue an access token
