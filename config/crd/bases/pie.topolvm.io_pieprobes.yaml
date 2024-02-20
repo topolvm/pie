@@ -133,6 +133,13 @@ spec:
                 type: integer
               probeThreshold:
                 type: string
+            required:
+            - containerImage
+            - controllerUrl
+            - monitoringStorageClass
+            - nodeSelector
+            - probePeriod
+            - probeThreshold
             type: object
           status:
             description: PieProbeStatus defines the observed state of PieProbe
