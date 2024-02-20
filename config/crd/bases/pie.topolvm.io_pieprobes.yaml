@@ -34,10 +34,6 @@ spec:
           spec:
             description: PieProbeSpec defines the desired state of PieProbe
             properties:
-              containerImage:
-                type: string
-              controllerUrl:
-                type: string
               monitoringStorageClass:
                 type: string
                 x-kubernetes-validations:
@@ -134,8 +130,6 @@ spec:
               probeThreshold:
                 type: string
             required:
-            - containerImage
-            - controllerUrl
             - monitoringStorageClass
             - nodeSelector
             - probePeriod

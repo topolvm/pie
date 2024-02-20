@@ -195,7 +195,11 @@ func subMain() error {
 		return err
 	}
 
-	pieProbeController := pie.NewPieProbeController(mgr.GetClient())
+	pieProbeController := pie.NewPieProbeController(
+		mgr.GetClient(),
+		containerImage,
+		controllerURL,
+	)
 	err = pieProbeController.SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to start pieProbeController")

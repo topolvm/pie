@@ -17,8 +17,6 @@ type PieProbeSpec struct {
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="monitoringStorageClass is immutable"
 	MonitoringStorageClass string `json:"monitoringStorageClass"`
 
-	ContainerImage string              `json:"containerImage"`
-	ControllerUrl  string              `json:"controllerUrl"`
 	NodeSelector   corev1.NodeSelector `json:"nodeSelector"`
 	ProbePeriod    int                 `json:"probePeriod"`
 	ProbeThreshold string              `json:"probeThreshold"`

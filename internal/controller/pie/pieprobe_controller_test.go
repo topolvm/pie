@@ -112,6 +112,8 @@ var _ = Describe("PieProbe controller", func() {
 
 		pieProbeReconciler := NewPieProbeController(
 			k8sClient,
+			"dummy.image",
+			"http://localhost:8082",
 		)
 		err = pieProbeReconciler.SetupWithManager(mgr)
 		Expect(err).NotTo(HaveOccurred())
@@ -123,8 +125,6 @@ var _ = Describe("PieProbe controller", func() {
 			},
 			Spec: piev1alpha1.PieProbeSpec{
 				MonitoringStorageClass: "sc",
-				ContainerImage:         "dummy.image",
-				ControllerUrl:          "http://localhost:8082",
 				NodeSelector:           nodeSelector,
 				ProbePeriod:            1,
 			},

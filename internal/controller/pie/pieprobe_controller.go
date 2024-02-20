@@ -34,7 +34,9 @@ const (
 
 // PieProbeReconciler reconciles a PieProbe object
 type PieProbeReconciler struct {
-	client client.Client
+	client         client.Client
+	containerImage string
+	controllerUrl  string
 }
 
 //+kubebuilder:rbac:groups=pie.topolvm.io,resources=pieprobes,verbs=get;list;watch;create;update;patch;delete
@@ -384,7 +386,7 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 		volumeName := "genericvol"
 		container := &cronjob.Spec.JobTemplate.Spec.Template.Spec.Containers[0]
 		container.Name = constants.ProbeContainerName
-		container.Image = pieProbe.Spec.ContainerImage
+		container.Image = r.containerImage
 
 		var userID int64 = 1001
 		var groupID int64 = 1001
@@ -440,7 +442,7 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 			}
 			container.Args = []string{
 				"probe",
-				fmt.Sprintf("--destination-address=%s", pieProbe.Spec.ControllerUrl),
+				fmt.Sprintf("--destination-address=%s", r.controllerUrl),
 				"--path=/mounted/",
 				fmt.Sprintf("--node-name=%s", *nodeName),
 				fmt.Sprintf("--storage-class=%s", storageClass),
@@ -528,8 +530,12 @@ func getCronJobName(kind int, nodeNamePtr *string, pieProbe *piev1alpha1.PieProb
 
 func NewPieProbeController(
 	client client.Client,
+	containerImage string,
+	controllerUrl string,
 ) *PieProbeReconciler {
 	return &PieProbeReconciler{
-		client: client,
+		client:         client,
+		containerImage: containerImage,
+		controllerUrl:  controllerUrl,
 	}
 }
