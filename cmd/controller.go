@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"context"
@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	piev1alpha1 "github.com/topolvm/pie/api/pie/v1alpha1"
 	"github.com/topolvm/pie/internal/controller"
+	"github.com/topolvm/pie/internal/controller/pie"
 	"github.com/topolvm/pie/metrics"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -75,6 +77,7 @@ func init() {
 
 	rootCmd.AddCommand(controllerCmd)
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+	utilruntime.Must(piev1alpha1.AddToScheme(scheme))
 
 	//+kubebuilder:scaffold:scheme
 }
@@ -151,6 +154,16 @@ func subMain() error {
 		return err
 	}
 
+	probePodReconciler := controller.NewProbePodReconciler(
+		mgr.GetClient(),
+		exporter,
+	)
+	err = probePodReconciler.SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to start probePodReconciler")
+		return err
+	}
+
 	if controllerURL == "" {
 		err = errors.New("empty controllerURL")
 		setupLog.Error(err, "the controllerURL should be specified")
@@ -179,6 +192,17 @@ func subMain() error {
 	err = storageClassReconciler.SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to start storageClassReconciler")
+		return err
+	}
+
+	pieProbeController := pie.NewPieProbeController(
+		mgr.GetClient(),
+		containerImage,
+		controllerURL,
+	)
+	err = pieProbeController.SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to start pieProbeController")
 		return err
 	}
 

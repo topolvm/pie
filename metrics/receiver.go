@@ -27,8 +27,13 @@ func (rh *receiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rh.metrics.SetLatency(receivedData.Node, receivedData.StorageClass, receivedData.ReadLatency, receivedData.WriteLatency)
-	rh.metrics.IncrementPerformanceProbeCount(receivedData.Node, receivedData.StorageClass, receivedData.PerformanceProbeSucceed)
+	if receivedData.PieProbeName == "" {
+		rh.metrics.SetLatency(receivedData.Node, receivedData.StorageClass, receivedData.ReadLatency, receivedData.WriteLatency)
+		rh.metrics.IncrementPerformanceProbeCount(receivedData.Node, receivedData.StorageClass, receivedData.PerformanceProbeSucceed)
+	} else {
+		rh.metrics.SetLatencyOnMountProbe(receivedData.PieProbeName, receivedData.Node, receivedData.StorageClass, receivedData.ReadLatency, receivedData.WriteLatency)
+		rh.metrics.IncrementPerformanceOnMountProbeCount(receivedData.PieProbeName, receivedData.Node, receivedData.StorageClass, receivedData.PerformanceProbeSucceed)
+	}
 
 	fmt.Fprintf(w, "OK")
 }

@@ -29,6 +29,32 @@ rules:
   - patch
   - update
 - apiGroups:
+  - pie.topolvm.io
+  resources:
+  - pieprobes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pie.topolvm.io
+  resources:
+  - pieprobes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - pie.topolvm.io
+  resources:
+  - pieprobes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - storage.k8s.io
   resources:
   - storageclasses
@@ -82,6 +108,18 @@ rules:
   - delete
   - get
   - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
   - watch
 - apiGroups:
   - ""

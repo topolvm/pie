@@ -1,6 +1,7 @@
 package types
 
 type MetricsExchangeFormat struct {
+	PieProbeName            string  `json:"pie_probe_name"`
 	Node                    string  `json:"node"`
 	StorageClass            string  `json:"storage_class"`
 	WriteLatency            float64 `json:"write_latency"`

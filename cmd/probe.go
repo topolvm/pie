@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"errors"
@@ -18,10 +18,12 @@ var probeCmd = &cobra.Command{
 		}
 
 		return probe.SubMain(
+			probeConfig.pieProbeName,
 			probeConfig.nodeName,
 			probeConfig.fioFilename,
 			probeConfig.storageClass,
-			probeConfig.controllerAddr)
+			probeConfig.controllerAddr,
+		)
 	},
 }
 
@@ -30,6 +32,15 @@ var probeConfig struct {
 	storageClass   string
 	fioFilename    string
 	nodeName       string
+	pieProbeName   string
+}
+
+var provisionProbeCmd = &cobra.Command{
+	Use: "provision-probe",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Nothing to do
+		return nil
+	},
 }
 
 func init() {
@@ -38,6 +49,8 @@ func init() {
 	fs.StringVar(&probeConfig.storageClass, "storage-class", "", "target StorageClass name")
 	fs.StringVar(&probeConfig.fioFilename, "path", "/test", "target I/O test directory path")
 	fs.StringVar(&probeConfig.nodeName, "node-name", "", "node name")
-
+	fs.StringVar(&probeConfig.pieProbeName, "pie-probe-name", "", "pie probe name")
 	rootCmd.AddCommand(probeCmd)
+
+	rootCmd.AddCommand(provisionProbeCmd)
 }
