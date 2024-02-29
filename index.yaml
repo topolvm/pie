@@ -8,6 +8,22 @@ entries:
       artifacthub.io/license: Apache-2.0
     apiVersion: v2
     appVersion: 0.9.0
+    created: "2024-02-29T01:46:19.988540187Z"
+    description: An application that monitors the availability of Kubernetes storage
+      in end-to-end manner.
+    digest: 3be17185ea0ac4072d39a9c2887d913f86a1cd8e934159b2952cb27bd65fa4e8
+    name: pie
+    type: application
+    urls:
+    - https://github.com/topolvm/pie/releases/download/pie-chart-v0.5.1/pie-0.5.1.tgz
+    version: 0.5.1
+  - annotations:
+      artifacthub.io/images: |
+        - name: pie
+          image: ghcr.io/topolvm/pie:0.9.0
+      artifacthub.io/license: Apache-2.0
+    apiVersion: v2
+    appVersion: 0.9.0
     created: "2024-02-28T07:38:18.595931851Z"
     description: An application that monitors the availability of Kubernetes storage
       in end-to-end manner.
@@ -227,4 +243,4 @@ entries:
     urls:
     - https://github.com/topolvm/pie/releases/download/pie-chart-v0.1.0/pie-0.1.0.tgz
     version: 0.1.0
-generated: "2024-02-28T07:38:18.59603797Z"
+generated: "2024-02-29T01:46:19.988674126Z"
