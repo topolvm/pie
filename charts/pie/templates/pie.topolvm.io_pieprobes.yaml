@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.12.0
+    controller-gen.kubebuilder.io/version: v0.13.0
   name: pieprobes.pie.topolvm.io
 spec:
   group: pie.topolvm.io
@@ -34,10 +34,6 @@ spec:
           spec:
             description: PieProbeSpec defines the desired state of PieProbe
             properties:
-              containerImage:
-                type: string
-              controllerUrl:
-                type: string
               monitoringStorageClass:
                 type: string
                 x-kubernetes-validations:
@@ -133,6 +129,11 @@ spec:
                 type: integer
               probeThreshold:
                 type: string
+            required:
+            - monitoringStorageClass
+            - nodeSelector
+            - probePeriod
+            - probeThreshold
             type: object
           status:
             description: PieProbeStatus defines the observed state of PieProbe

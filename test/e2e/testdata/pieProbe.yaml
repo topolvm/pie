@@ -6,8 +6,6 @@ metadata:
   namespace: e2e
 spec:
   monitoringStorageClass: standard
-  containerImage: pie:dev
-  controllerUrl: http://pie.e2e.svc:8082
   nodeSelector:
     nodeSelectorTerms:
     - matchExpressions:
@@ -25,8 +23,6 @@ metadata:
   namespace: e2e
 spec:
   monitoringStorageClass: dummy
-  containerImage: pie:dev
-  controllerUrl: http://pie.e2e.svc:8082
   nodeSelector:
     nodeSelectorTerms:
     - matchExpressions:
