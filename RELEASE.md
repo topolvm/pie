@@ -39,7 +39,7 @@ The result should look something like:
 Bump version
 ------------
 
-1. Determine a new version number, and define the `VERSION` variable.
+1. Determine a new version number by [checking the differences](https://github.com/topolvm/pie/compare/vX.Y.Z...main) since the last release. Then, define the `VERSION` variable.
 
     ```console
     VERSION=1.2.3
@@ -74,7 +74,7 @@ This will prevent the pie version from going up just by modifying the Helm Chart
 
 You must change the version of Chart.yaml when making changes to the Helm Chart. CI fails with lint error when creating a Pull Request without changing the version of Chart.yaml.
 
-1. Determine a new version number, and manually run the workflow to create a PR to update the Helm Chart.
+1. Determine a new version number by [checking the differences](https://github.com/topolvm/pie/compare/pie-chart-vX.Y.Z...main) since the last release. Then, manually run the workflow to create a PR to update the Helm Chart.
 
    https://github.com/topolvm/pie/actions/workflows/create-chart-update-pr.yaml
 
