@@ -286,7 +286,7 @@ func (r *NodeReconciler) createOrUpdateJob(ctx context.Context, storageClass, no
 							Spec: corev1.PersistentVolumeClaimSpec{
 								AccessModes:      []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 								StorageClassName: &storageClass,
-								Resources: corev1.ResourceRequirements{
+								Resources: corev1.VolumeResourceRequirements{
 									Requests: map[corev1.ResourceName]resource.Quantity{
 										corev1.ResourceStorage: *resource.NewQuantity(
 											100*1024*1024, resource.BinarySI),
