@@ -1,5 +1,9 @@
 CHART_TESTING_VERSION := 3.10.1
 CONTROLLER_TOOLS_VERSION := v0.14.0
+# ENVTEST_VERSION is usually latest, but might need to be pinned from time to time.
+# Version pinning is needed due to version incompatibility between controller-runtime and setup-envtest.
+# For more information: https://github.com/kubernetes-sigs/controller-runtime/issues/2744
+ENVTEST_VERSION := bf15e44028f908c790721fc8fe67c7bf2d06a611
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 # NOTE: the suffix .x means wildcard match so specifying the latest patch version.
 ENVTEST_K8S_VERSION := 1.29.x
