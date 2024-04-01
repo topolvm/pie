@@ -12,7 +12,7 @@ pie verifies that PVs are successfully provisioned on the specified nodes for th
 
 ## Supported environments
 
-- Kubernetes: 1.28, 1.27, 1.26
+- Kubernetes: 1.29, 1.28, 1.27
 
 ## Getting Started
 ### Running on the cluster

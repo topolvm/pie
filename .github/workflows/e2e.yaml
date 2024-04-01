@@ -13,11 +13,11 @@ on:
 jobs:
   e2e-k8s:
     name: "e2e-k8s"
-    runs-on: "ubuntu-20.04"
+    runs-on: "ubuntu-22.04"
     strategy:
       fail-fast: false
       matrix:
-        kubernetes_versions: ["1.28", "1.27", "1.26"]
+        kubernetes_versions: ["1.29", "1.28", "1.27"]
     env:
       KUBERNETES_VERSION: ${{ matrix.kubernetes_versions }}
     steps:
