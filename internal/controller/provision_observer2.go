@@ -104,7 +104,7 @@ func (p *provisionObserver2) getNodeNameAndStorageClass(ctx context.Context, nam
 }
 
 func isProbeJob2(o metav1.OwnerReference) bool {
-	return o.Kind == "Job" && strings.HasPrefix(o.Name, constants.ProbeNamePrefix)
+	return o.Kind == "Job" && (strings.HasPrefix(o.Name, constants.MountProbeNamePrefix) || strings.HasPrefix(o.Name, constants.ProvisionProbeNamePrefix))
 }
 
 func (p *provisionObserver2) deleteOwnerJobOfPod(ctx context.Context, namespace, podName string) error {

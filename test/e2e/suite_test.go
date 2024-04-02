@@ -218,6 +218,13 @@ var _ = Describe("PieProbe resource", func() {
 				}
 			}
 		}).Should(Succeed())
+
+		// Check that failing Jobs are correctly removed.
+		Eventually(func(g Gomega) {
+			stdout, _, err := kubectl("get", "job", "-n", ns, "-l", "pie-probe=pie-probe-dummy-sc")
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(stdout).Should(BeEmpty())
+		}).Should(Succeed())
 	})
 })
 
