@@ -66,7 +66,7 @@ Read `kubernetes' go.mod`(https://github.com/kubernetes/kubernetes/blob/\<upgrad
 
 ```
 $ VERSION=<upgrading prometheus-related libraries release version>
-$ go get github.com/prometheus/client_golang@$VERSION
+$ go get github.com/prometheus/client_golang@v${VERSION}
 ```
 
 Then, please tidy up the dependencies.
