@@ -1,17 +1,24 @@
+# https://github.com/helm/chart-testing/releases
 CHART_TESTING_VERSION := 3.10.1
+# https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := v0.14.0
-# ENVTEST_VERSION is usually latest, but might need to be pinned from time to time.
-# Version pinning is needed due to version incompatibility between controller-runtime and setup-envtest.
-# For more information: https://github.com/kubernetes-sigs/controller-runtime/issues/2744
-ENVTEST_VERSION := bf15e44028f908c790721fc8fe67c7bf2d06a611
-# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-# NOTE: the suffix .x means wildcard match so specifying the latest patch version.
-ENVTEST_K8S_VERSION := 1.29.x
+# https://github.com/helm/helm/releases
 HELM_VERSION := 3.14.3
+# https://github.com/kubernetes-sigs/kind/releases
 KIND_VERSION := v0.22.0
+# https://github.com/kubernetes-sigs/kustomize/releases
+KUSTOMIZE_VERSION := v5.3.0
+
 # It is set by CI using the environment variable, use conditional assignment.
 KUBERNETES_VERSION ?= 1.29
-KUSTOMIZE_VERSION := v5.3.0
+
+# Tools versions which are defined in go.mod
+SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+CONTROLLER_RUNTIME_VERSION := $(shell awk '/sigs\.k8s\.io\/controller-runtime/ {print substr($$2, 2)}' $(SELF_DIR)/go.mod)
+
+ENVTEST_BRANCH := release-$(shell echo $(CONTROLLER_RUNTIME_VERSION) | cut -d "." -f 1-2)
+# NOTE: the suffix .x means wildcard match so specifying the latest patch version.
+ENVTEST_K8S_VERSION := $(KUBERNETES_VERSION).x
 
 # The container version of kind must be with the digest.
 # ref. https://github.com/kubernetes-sigs/kind/releases
