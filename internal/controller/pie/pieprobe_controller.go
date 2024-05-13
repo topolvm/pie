@@ -514,11 +514,11 @@ func getCronJobName(kind int, nodeNamePtr *string, pieProbe *piev1alpha1.PieProb
 	if len(pieProbeName) > 10 {
 		pieProbeName = pieProbeName[:10]
 	}
-	if len(nodeName) > 11 {
-		nodeName = nodeName[:11]
+	if len(nodeName) > 15 {
+		nodeName = nodeName[:15]
 	}
-	if len(storageClass) > 14 {
-		storageClass = storageClass[:14]
+	if len(storageClass) > 12 {
+		storageClass = storageClass[:12]
 	}
 
 	if kind == ProvisionProbe {
