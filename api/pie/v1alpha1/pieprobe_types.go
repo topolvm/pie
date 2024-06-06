@@ -17,9 +17,13 @@ type PieProbeSpec struct {
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf",message="monitoringStorageClass is immutable"
 	MonitoringStorageClass string `json:"monitoringStorageClass"`
 
-	NodeSelector   corev1.NodeSelector `json:"nodeSelector"`
-	ProbePeriod    int                 `json:"probePeriod"`
-	ProbeThreshold string              `json:"probeThreshold"`
+	NodeSelector corev1.NodeSelector `json:"nodeSelector"`
+
+	//+kubebuilder:validation:Maximum:=59
+	//+kubebuilder:validation:Minimum:=1
+	ProbePeriod int `json:"probePeriod"`
+
+	ProbeThreshold string `json:"probeThreshold"`
 }
 
 // PieProbeStatus defines the observed state of PieProbe

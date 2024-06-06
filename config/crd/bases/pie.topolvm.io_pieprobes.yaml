@@ -131,6 +131,8 @@ spec:
                 type: object
                 x-kubernetes-map-type: atomic
               probePeriod:
+                maximum: 59
+                minimum: 1
                 type: integer
               probeThreshold:
                 type: string
