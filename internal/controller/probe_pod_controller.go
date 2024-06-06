@@ -21,7 +21,7 @@ type ProbePodReconciler struct {
 	client client.Client
 
 	startTime time.Time
-	po        *provisionObserver2
+	po        *provisionObserver
 }
 
 func NewProbePodReconciler(
@@ -31,7 +31,7 @@ func NewProbePodReconciler(
 	return &ProbePodReconciler{
 		client:    client,
 		startTime: time.Now(),
-		po:        newProvisionObserver2(client, exporter),
+		po:        newProvisionObserver(client, exporter),
 	}
 }
 

@@ -25,7 +25,7 @@ type namespacePod struct {
 	podName   string
 }
 
-type provisionObserver2 struct {
+type provisionObserver struct {
 	client            client.Client
 	exporter          metrics.MetricsExporter
 	podRegisteredTime map[namespacePod]time.Time
@@ -39,11 +39,11 @@ type provisionObserver2 struct {
 	checkDoneCh chan struct{}
 }
 
-func newProvisionObserver2(
+func newProvisionObserver(
 	client client.Client,
 	exporter metrics.MetricsExporter,
-) *provisionObserver2 {
-	return &provisionObserver2{
+) *provisionObserver {
+	return &provisionObserver{
 		client:            client,
 		exporter:          exporter,
 		podRegisteredTime: make(map[namespacePod]time.Time),
@@ -56,35 +56,35 @@ func newProvisionObserver2(
 	}
 }
 
-func (p *provisionObserver2) setPodRegisteredTime(namespace, podName string, eventTime time.Time) {
+func (p *provisionObserver) setPodRegisteredTime(namespace, podName string, eventTime time.Time) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.podRegisteredTime[namespacePod{namespace, podName}] = eventTime
 }
 
-func (p *provisionObserver2) setPodStartedTime(namespace, podName string, eventTime time.Time) {
+func (p *provisionObserver) setPodStartedTime(namespace, podName string, eventTime time.Time) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.podStartedTime[namespacePod{namespace, podName}] = eventTime
 }
 
-func (p *provisionObserver2) setProbeThreshold(namespace, podName string, thr time.Duration) {
+func (p *provisionObserver) setProbeThreshold(namespace, podName string, thr time.Duration) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.probeThreshold[namespacePod{namespace, podName}] = thr
 }
 
-func (p *provisionObserver2) setPodPieProbeName(namespace, podName, pieProbeName string) {
+func (p *provisionObserver) setPodPieProbeName(namespace, podName, pieProbeName string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.podPieProbeName[namespacePod{namespace, podName}] = pieProbeName
 }
 
-func (p *provisionObserver2) deleteEventTime(namespace, podName string) {
+func (p *provisionObserver) deleteEventTime(namespace, podName string) {
 	p.makeCheckCh <- struct{}{}
 	<-p.checkDoneCh
 
@@ -98,7 +98,7 @@ func (p *provisionObserver2) deleteEventTime(namespace, podName string) {
 	delete(p.podPieProbeName, namespacePod{namespace, podName})
 }
 
-func (p *provisionObserver2) getNodeNameAndStorageClass(ctx context.Context, namespace, podName string) (string, string, error) {
+func (p *provisionObserver) getNodeNameAndStorageClass(ctx context.Context, namespace, podName string) (string, string, error) {
 	var pod corev1.Pod
 	err := p.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: podName}, &pod)
 	if err != nil {
@@ -112,7 +112,7 @@ func isProbeJob2(o metav1.OwnerReference) bool {
 	return o.Kind == "Job" && (strings.HasPrefix(o.Name, constants.MountProbeNamePrefix) || strings.HasPrefix(o.Name, constants.ProvisionProbeNamePrefix))
 }
 
-func (p *provisionObserver2) deleteOwnerJobOfPod(ctx context.Context, namespace, podName string) error {
+func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, namespace, podName string) error {
 	var pod corev1.Pod
 	err := p.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: podName}, &pod)
 	if err != nil {
@@ -150,7 +150,7 @@ func (p *provisionObserver2) deleteOwnerJobOfPod(ctx context.Context, namespace,
 	return nil
 }
 
-func (p *provisionObserver2) incrementProbeCount(pieProbeName, podName, nodeName, storageClass string, onTime bool) {
+func (p *provisionObserver) incrementProbeCount(pieProbeName, podName, nodeName, storageClass string, onTime bool) {
 	if strings.HasPrefix(podName, constants.ProvisionProbeNamePrefix) { // ProvisionProbe
 		p.exporter.IncrementProvisionProbeCount(pieProbeName, storageClass, onTime)
 	} else if strings.HasPrefix(podName, constants.MountProbeNamePrefix) { // MountProbe
@@ -158,7 +158,7 @@ func (p *provisionObserver2) incrementProbeCount(pieProbeName, podName, nodeName
 	}
 }
 
-func (p *provisionObserver2) check(ctx context.Context) {
+func (p *provisionObserver) check(ctx context.Context) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -204,7 +204,7 @@ func (p *provisionObserver2) check(ctx context.Context) {
 
 //+kubebuilder:rbac:namespace=default,groups=batch,resources=jobs,verbs=get;list;watch;delete
 
-func (p *provisionObserver2) Start(ctx context.Context) error {
+func (p *provisionObserver) Start(ctx context.Context) error {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
