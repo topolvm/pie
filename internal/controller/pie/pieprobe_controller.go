@@ -4,9 +4,11 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"hash/crc32"
 	"io"
+	"time"
 
 	piev1alpha1 "github.com/topolvm/pie/api/pie/v1alpha1"
 	"github.com/topolvm/pie/constants"
@@ -67,6 +69,10 @@ func (r *PieProbeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err
+	}
+
+	if time.Duration(pieProbe.Spec.ProbePeriod)*time.Minute <= pieProbe.Spec.ProbeThreshold.Duration {
+		return ctrl.Result{}, errors.New("probe period should be larger than probe threshold")
 	}
 
 	var storageClassForGet storagev1.StorageClass

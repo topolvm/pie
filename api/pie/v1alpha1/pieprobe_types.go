@@ -23,7 +23,7 @@ type PieProbeSpec struct {
 	//+kubebuilder:validation:Minimum:=1
 	ProbePeriod int `json:"probePeriod"`
 
-	ProbeThreshold string `json:"probeThreshold"`
+	ProbeThreshold metav1.Duration `json:"probeThreshold"`
 }
 
 // PieProbeStatus defines the observed state of PieProbe

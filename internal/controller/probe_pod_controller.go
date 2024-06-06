@@ -77,10 +77,7 @@ func (r *ProbePodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	r.po.setPodPieProbeName(pod.Namespace, pod.Name, pieProbeName)
 
-	probeThreshold, err := time.ParseDuration(pieProbe.Spec.ProbeThreshold)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
+	probeThreshold := pieProbe.Spec.ProbeThreshold.Duration
 	r.po.setProbeThreshold(pod.Namespace, pod.Name, probeThreshold)
 
 	for _, status := range pod.Status.ContainerStatuses {
