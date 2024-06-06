@@ -54,26 +54,12 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           args:
           - "controller"
-          {{- range .Values.controller.monitoringStorageClasses }}
-          - "--monitoring-storage-class={{ . }}"
-          {{- end }}
           - "--container-image"
           - "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           - "--namespace"
           - "{{ .Release.Namespace }}"
           - "--controller-url"
           - "http://{{ include "pie.fullname" . }}.{{ .Release.Namespace }}.svc:8082"
-          {{- with .Values.controller.createProbeThreshold }}
-          - "--create-probe-threshold={{ . }}"
-          {{- end }}
-          {{- with .Values.controller.nodeSelector }}
-          - "--node-selector"
-          - "{{ . }}"
-          {{- end }}
-          {{- with .Values.controller.probePeriod }}
-          - "--probe-period"
-          - "{{ . }}"
-          {{- end }}
           {{- with .Values.controller.enablePProf }}
           - "--enable-pprof"
           - "{{ . }}"

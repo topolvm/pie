@@ -58,7 +58,4 @@ tolerations: []
 affinity: {}
 
 controller:
-  monitoringStorageClasses: []
-  createProbeThreshold:
-  nodeSelector:
   enablePProf:

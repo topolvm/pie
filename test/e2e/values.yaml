@@ -3,8 +3,4 @@ image:
   pullPolicy: IfNotPresent
   tag: dev
 
-controller:
-  monitoringStorageClasses:
-  - standard
-  - dummy
-  createProbeThreshold: "10s"
+controller: {}
