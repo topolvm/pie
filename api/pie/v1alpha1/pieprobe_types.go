@@ -24,6 +24,7 @@ type PieProbeSpec struct {
 	//+kubebuilder:validation:Minimum:=1
 	ProbePeriod int `json:"probePeriod"`
 
+	//+kubebuilder:default:="1m"
 	ProbeThreshold metav1.Duration `json:"probeThreshold"`
 }
 

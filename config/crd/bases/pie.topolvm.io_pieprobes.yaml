@@ -136,6 +136,7 @@ spec:
                 minimum: 1
                 type: integer
               probeThreshold:
+                default: 1m
                 type: string
             required:
             - monitoringStorageClass
