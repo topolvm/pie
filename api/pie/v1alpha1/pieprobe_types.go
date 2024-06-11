@@ -19,6 +19,7 @@ type PieProbeSpec struct {
 
 	NodeSelector corev1.NodeSelector `json:"nodeSelector"`
 
+	//+kubebuilder:default:=1
 	//+kubebuilder:validation:Maximum:=59
 	//+kubebuilder:validation:Minimum:=1
 	ProbePeriod int `json:"probePeriod"`

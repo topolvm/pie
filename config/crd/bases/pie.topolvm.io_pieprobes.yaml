@@ -131,6 +131,7 @@ spec:
                 type: object
                 x-kubernetes-map-type: atomic
               probePeriod:
+                default: 1
                 maximum: 59
                 minimum: 1
                 type: integer
