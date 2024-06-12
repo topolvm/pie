@@ -17,68 +17,60 @@ pie verifies that PVs are successfully provisioned on the specified nodes for th
 ## Getting Started
 ### Running on the cluster
 
-1. Create values.yaml. At least the following setting is mandatory.
-
-    ```yaml
-    controller:
-      monitoringStorageClasses: [<storage_classes_to_be_monitored>]
-    ```
-
-2. Then you can install it using Helm.
-
+1. Install pie using Helm:
     ```sh
     helm repo add pie https://topolvm.github.io/pie
-    helm install pie --values values.yaml
+    helm install pie
+    ```
+2. Create a PieProbe resource:
+    ```sh
+    cat <<EOS | kubectl apply -f -
+    apiVersion: pie.topolvm.io/v1alpha1
+    kind: PieProbe
+    metadata:
+      name: pieprobe
+    spec:
+      monitoringStorageClass: YOUR-STORAGE-CLASS-NAME # This field is mandatory.
+      # All other fields are optional.
+      nodeSelector:
+        nodeSelectorTerms:
+        - matchExpressions:
+        - key: foo
+          operator: DoesNotExist
+      probePeriod: 1
+      probeThreshold: 10s
+    EOS
     ```
 
 ## Prometheus metrics
-### `pie_io_write_latency_seconds`
-IO latency of write.
-
-TYPE: gauge
-
-### `pie_io_read_latency_seconds`
-IO latency of read.
-
-TYPE: gauge
-
-### `pie_create_probe_total`
-The number of attempts of the creation of the Pod object and the creation of the container.
-
-TYPE: counter
-
-### `pie_performance_probe_total`
-The number of attempts of performing the IO benchmarks.
-
-TYPE: counter
 
 ### `pie_io_write_latency_on_mount_probe_seconds`
 
-_Experimental metrics._ IO latency of write, benchmarked on mount-probe Pods.
+IO latency of write, benchmarked on mount-probe Pods.
 
 TYPE: gauge
 
 ### `pie_io_read_latency_on_mount_probe_seconds`
 
-_Experimental metrics._ IO latency of read, benchmarked on mount-probe Pods.
+IO latency of read, benchmarked on mount-probe Pods.
 
 TYPE: gauge
 
 ### `pie_mount_probe_total`
 
-_Experimental metrics._ The number of attempts of the creation of the mount-probe Pod object and the creation of the container.
+The number of attempts of the creation of the mount-probe Pod object and the creation of the container.
 
 TYPE: counter
 
 ### `pie_performance_on_mount_probe_total`
 
-_Experimental metrics._ The number of attempts of performing the IO benchmarks on mount-probe Pods.
+The number of attempts of performing the IO benchmarks on mount-probe Pods.
 
 TYPE: counter
 
 ### `pie_provision_probe_total`
 
-_Experimental metrics._ The number of attempts of the creation of the provision-probe Pod object and the creation of the container.
+The number of attempts of the creation of the provision-probe Pod object and the creation of the container.
 
 TYPE: counter
 

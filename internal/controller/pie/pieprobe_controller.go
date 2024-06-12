@@ -4,9 +4,11 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"hash/crc32"
 	"io"
+	"time"
 
 	piev1alpha1 "github.com/topolvm/pie/api/pie/v1alpha1"
 	"github.com/topolvm/pie/constants"
@@ -46,6 +48,7 @@ type PieProbeReconciler struct {
 //+kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch;create;update;patch
 //+kubebuilder:rbac:namespace=default,groups=batch,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:namespace=default,groups=core,resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=storage.k8s.io,resources=storageclasses,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -66,6 +69,10 @@ func (r *PieProbeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err
+	}
+
+	if time.Duration(pieProbe.Spec.ProbePeriod)*time.Minute <= pieProbe.Spec.ProbeThreshold.Duration {
+		return ctrl.Result{}, errors.New("probe period should be larger than probe threshold")
 	}
 
 	var storageClassForGet storagev1.StorageClass

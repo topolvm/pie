@@ -17,82 +17,13 @@ To avoid such a situation, the storage administrator should be aware of the prob
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    Prometheus[Prometheus, <br>VictoriaMetrics] -->|scrape| controller
-    controller[controller]
-    controller -->|create| cronjobA[CronJob] -->|create| probeAA
-    controller -->|create| cronjobB[CronJob] -->|create| probeAB
-    controller -->|create| cronjobC[CronJob] -->|create| probeBA
-    controller -->|create| cronjobD[CronJob] -->|create| probeBB
-    probeAA -->|use| volumeA[(Generic Ephemeral Volume)]
-    probeAB -->|use| volumeB[(Generic Ephemeral Volume)]
-    probeBA -->|use| volumeC[(Generic Ephemeral Volume)]
-    probeBB -->|use| volumeD[(Generic Ephemeral Volume)]
-    probeAA -->|post metrics| controller
-    probeAB -->|post metrics| controller
-    probeBA -->|post metrics| controller
-    probeBB -->|post metrics| controller
-    subgraph NodeA
-        probeAA[Probe]
-        probeAB[Probe]
-    end
-    subgraph NodeB
-        probeBA[Probe]
-        probeBB[Probe]
-    end
-    volumeA -.-|related| storageclassA[StorageClass A]
-    volumeB -.-|related| storageclassB[StorageClass B]
-    volumeC -.-|related| storageclassA[StorageClass A]
-    volumeD -.-|related| storageclassB[StorageClass B]
-
-    %% This is a workaround to make volumeA and volumeB closer.
-    subgraph volumeAB [ ]
-        volumeA
-        volumeB
-    end
-    style volumeAB fill-opacity:0,stroke-width:0px
-
-    %% This is a workaround to make volumeC and volumeD closer.
-    subgraph volumeCD [ ]
-        volumeC
-        volumeD
-    end
-    style volumeCD fill-opacity:0,stroke-width:0px
-```
-
-### How pie works
-
-pie works as follows:
-
-1. The controller creates CronJobs for each node and StorageClass.
-2. A CronJob periodically creates a probe pod.
-3. A Probe pod requests to create a Generic Ephemeral Volume via the related StorageClass.
-4. The controller monitors the pod creation events and measures how long it takes to create probe pods.
-   (This indirectly measures the time required for volume provisioning.) Then it exposes the result as Prometheus metrics.
-5. Once the prob pods are created, they try to read and write data from and to the Generic Ephemeral Volume, and measure the I/O latency. Then they post the result to the controller.
-6. When the controller receives the requests from the probe pods, it exposes the result as Prometheus Metrics.
-
-### Metrics design decision
-
-As explained in [README.md](../README.md#prometheus-metrics), metrics related to PV creation are output in the form of whether the PV creation was completed within a certain time (denoted as `on_time` label of `create_probe_total`), not the time taken for the creation.
-
-If you try to output the time taken to create a PV, the metrics would not be output until the PV is actually created.
-Then, if the PV cannot be created due to some problems, the metric would not be output, and
-you would not realize that there are some problems.
-
-Therefore, if the PV is not created within a certain time, `create_probe_total` counter with `on_time=false` is incremented so that you can notice the problem even when the PV creation is completely stopped.
-
-### Experimental Architecture using provision-probe and mount-probe
-
-The current probe checks that both a new provisioning of a PV and its mounting succeed on every Node.
-This guarantee is sufficient but not necessary; although mounting an already provisioned PV should succeed on every node, it is sufficient that a new provisioning succeeds on at least one Node.
-
-To address the above issue, the new architecture has the following two types of probes:
+There are following two types of probes:
 - provision-probe, which checks that a new provision succeeds; and
 - mount-probe, which checks that a PV (possibly already provisioned) can be successfully mounted on each Node.
 
-In addition, PieProbe custom resource is introduced to group the probes that monitor a StorageClass. Each probe has an owner reference to a PieProbe and is GCed when the referenced PieProbe is deleted. See also issue [#50](https://github.com/topolvm/pie/issues/50).
+PieProbe custom resource is used to group the probes that monitor a StorageClass.
+Each probe has an owner reference to a PieProbe and is GCed when the referenced PieProbe is deleted.
+See also issue [#50](https://github.com/topolvm/pie/issues/50).
 
 ```mermaid
 flowchart TB
@@ -174,3 +105,16 @@ Each probe works as follows:
   (This indirectly measures the time required for mounting the volume.) Then it exposes the result as Prometheus metrics.
   5. Once the Pod is created, it tries to read and write data from and to the PV, and measures the I/O latency. Then it posts the result to the controller and exists normally.
   6. When the controller receives the request from the mount-probe Pod, it exposes the result as Prometheus metrics.
+
+
+### Metrics design decision
+
+As explained in [README.md](../README.md#prometheus-metrics), metrics related to PV creation are output in the form of whether the PV creation was completed within a certain time (denoted as `on_time` label of `provision_probe_total`), not the time taken for the creation.
+
+If you try to output the time taken to create a PV, the metrics would not be output until the PV is actually created.
+Then, if the PV cannot be created due to some problems, the metric would not be output, and
+you would not realize that there are some problems.
+
+Therefore, if the PV is not created within a certain time, `provision_probe_total` counter with `on_time=false` is incremented so that you can notice the problem even when the PV creation is completely stopped.
+
+The same goes for `mount_probe_total`, which similarly has the `on_time` label.

@@ -21,7 +21,7 @@ type ProbePodReconciler struct {
 	client client.Client
 
 	startTime time.Time
-	po        *provisionObserver2
+	po        *provisionObserver
 }
 
 func NewProbePodReconciler(
@@ -31,7 +31,7 @@ func NewProbePodReconciler(
 	return &ProbePodReconciler{
 		client:    client,
 		startTime: time.Now(),
-		po:        newProvisionObserver2(client, exporter),
+		po:        newProvisionObserver(client, exporter),
 	}
 }
 
@@ -77,10 +77,7 @@ func (r *ProbePodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	r.po.setPodPieProbeName(pod.Namespace, pod.Name, pieProbeName)
 
-	probeThreshold, err := time.ParseDuration(pieProbe.Spec.ProbeThreshold)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
+	probeThreshold := pieProbe.Spec.ProbeThreshold.Duration
 	r.po.setProbeThreshold(pod.Namespace, pod.Name, probeThreshold)
 
 	for _, status := range pod.Status.ContainerStatuses {

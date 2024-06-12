@@ -20,14 +20,19 @@ var (
 	logger = ctrl.Log.WithName("provision-observer")
 )
 
+type namespacePod struct {
+	namespace string
+	podName   string
+}
+
 type provisionObserver struct {
-	client               client.Client
-	namespace            string
-	exporter             metrics.MetricsExporter
-	createProbeThreshold time.Duration
-	podRegisteredTime    map[string]time.Time
-	podStartedTime       map[string]time.Time
-	countedFlag          map[string]struct{}
+	client            client.Client
+	exporter          metrics.MetricsExporter
+	podRegisteredTime map[namespacePod]time.Time
+	podStartedTime    map[namespacePod]time.Time
+	countedFlag       map[namespacePod]struct{}
+	probeThreshold    map[namespacePod]time.Duration
+	podPieProbeName   map[namespacePod]string
 	// mu protects above maps
 	mu          sync.Mutex
 	makeCheckCh chan struct{}
@@ -36,52 +41,66 @@ type provisionObserver struct {
 
 func newProvisionObserver(
 	client client.Client,
-	namespace string,
 	exporter metrics.MetricsExporter,
-	createProbeThreshold time.Duration,
 ) *provisionObserver {
 	return &provisionObserver{
-		client:               client,
-		namespace:            namespace,
-		exporter:             exporter,
-		createProbeThreshold: createProbeThreshold,
-		podRegisteredTime:    make(map[string]time.Time),
-		podStartedTime:       make(map[string]time.Time),
-		countedFlag:          make(map[string]struct{}),
-		makeCheckCh:          make(chan struct{}),
-		checkDoneCh:          make(chan struct{}),
+		client:            client,
+		exporter:          exporter,
+		podRegisteredTime: make(map[namespacePod]time.Time),
+		podStartedTime:    make(map[namespacePod]time.Time),
+		countedFlag:       make(map[namespacePod]struct{}),
+		probeThreshold:    make(map[namespacePod]time.Duration),
+		podPieProbeName:   make(map[namespacePod]string),
+		makeCheckCh:       make(chan struct{}),
+		checkDoneCh:       make(chan struct{}),
 	}
 }
 
-func (p *provisionObserver) setPodRegisteredTime(podName string, eventTime time.Time) {
+func (p *provisionObserver) setPodRegisteredTime(namespace, podName string, eventTime time.Time) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	p.podRegisteredTime[podName] = eventTime
+	p.podRegisteredTime[namespacePod{namespace, podName}] = eventTime
 }
 
-func (p *provisionObserver) setPodStartedTime(podName string, eventTime time.Time) {
+func (p *provisionObserver) setPodStartedTime(namespace, podName string, eventTime time.Time) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	p.podStartedTime[podName] = eventTime
+	p.podStartedTime[namespacePod{namespace, podName}] = eventTime
 }
 
-func (p *provisionObserver) deleteEventTime(podName string) {
+func (p *provisionObserver) setProbeThreshold(namespace, podName string, thr time.Duration) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.probeThreshold[namespacePod{namespace, podName}] = thr
+}
+
+func (p *provisionObserver) setPodPieProbeName(namespace, podName, pieProbeName string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.podPieProbeName[namespacePod{namespace, podName}] = pieProbeName
+}
+
+func (p *provisionObserver) deleteEventTime(namespace, podName string) {
 	p.makeCheckCh <- struct{}{}
 	<-p.checkDoneCh
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	delete(p.podRegisteredTime, podName)
-	delete(p.podStartedTime, podName)
-	delete(p.countedFlag, podName)
+	delete(p.podRegisteredTime, namespacePod{namespace, podName})
+	delete(p.podStartedTime, namespacePod{namespace, podName})
+	delete(p.countedFlag, namespacePod{namespace, podName})
+	delete(p.probeThreshold, namespacePod{namespace, podName})
+	delete(p.podPieProbeName, namespacePod{namespace, podName})
 }
 
-func (p *provisionObserver) getNodeNameAndStorageClass(ctx context.Context, podName string) (string, string, error) {
+func (p *provisionObserver) getNodeNameAndStorageClass(ctx context.Context, namespace, podName string) (string, string, error) {
 	var pod corev1.Pod
-	err := p.client.Get(ctx, client.ObjectKey{Namespace: p.namespace, Name: podName}, &pod)
+	err := p.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: podName}, &pod)
 	if err != nil {
 		return "", "", err
 	}
@@ -89,13 +108,13 @@ func (p *provisionObserver) getNodeNameAndStorageClass(ctx context.Context, podN
 	return pod.GetLabels()[constants.ProbeNodeLabelKey], pod.GetLabels()[constants.ProbeStorageClassLabelKey], nil
 }
 
-func isProbeJob(o metav1.OwnerReference) bool {
-	return o.Kind == "Job" && strings.HasPrefix(o.Name, constants.ProbeNamePrefix)
+func isProbeJob2(o metav1.OwnerReference) bool {
+	return o.Kind == "Job" && (strings.HasPrefix(o.Name, constants.MountProbeNamePrefix) || strings.HasPrefix(o.Name, constants.ProvisionProbeNamePrefix))
 }
 
-func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, podName string) error {
+func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, namespace, podName string) error {
 	var pod corev1.Pod
-	err := p.client.Get(ctx, client.ObjectKey{Namespace: p.namespace, Name: podName}, &pod)
+	err := p.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: podName}, &pod)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			return nil
@@ -105,9 +124,9 @@ func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, podName str
 	}
 
 	for _, ownerReference := range pod.GetOwnerReferences() {
-		if isProbeJob(ownerReference) {
+		if isProbeJob2(ownerReference) {
 			var job batchv1.Job
-			err := p.client.Get(ctx, client.ObjectKey{Namespace: p.namespace, Name: ownerReference.Name}, &job)
+			err := p.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: ownerReference.Name}, &job)
 			if err != nil {
 				if apierrors.IsNotFound(err) {
 					continue
@@ -131,38 +150,50 @@ func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, podName str
 	return nil
 }
 
+func (p *provisionObserver) incrementProbeCount(pieProbeName, podName, nodeName, storageClass string, onTime bool) {
+	if strings.HasPrefix(podName, constants.ProvisionProbeNamePrefix) { // ProvisionProbe
+		p.exporter.IncrementProvisionProbeCount(pieProbeName, storageClass, onTime)
+	} else if strings.HasPrefix(podName, constants.MountProbeNamePrefix) { // MountProbe
+		p.exporter.IncrementMountProbeCount(pieProbeName, nodeName, storageClass, onTime)
+	}
+}
+
 func (p *provisionObserver) check(ctx context.Context) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	for podName, registeredTime := range p.podRegisteredTime {
-		if _, ok := p.countedFlag[podName]; ok {
+	for nsAndPod, registeredTime := range p.podRegisteredTime {
+		namespace := nsAndPod.namespace
+		podName := nsAndPod.podName
+		if _, ok := p.countedFlag[nsAndPod]; ok {
 			continue
 		}
-		nodeName, storageClass, err := p.getNodeNameAndStorageClass(ctx, podName)
+		nodeName, storageClass, err := p.getNodeNameAndStorageClass(ctx, namespace, podName)
 		if err != nil {
 			if !apierrors.IsNotFound(err) {
 				logger.Error(err, "failed to get node and storage class related to the pod", "pod", podName)
 			}
 			continue
 		}
-		t, ok := p.podStartedTime[podName]
+		probeThreshold := p.probeThreshold[nsAndPod]
+		pieProbeName := p.podPieProbeName[nsAndPod]
+		t, ok := p.podStartedTime[nsAndPod]
 		if ok {
-			p.countedFlag[podName] = struct{}{}
-			if t.Sub(registeredTime) >= p.createProbeThreshold {
-				p.exporter.IncrementCreateProbeCount(nodeName, storageClass, false)
-				err := p.deleteOwnerJobOfPod(ctx, podName)
+			p.countedFlag[nsAndPod] = struct{}{}
+			if t.Sub(registeredTime) >= probeThreshold {
+				p.incrementProbeCount(pieProbeName, podName, nodeName, storageClass, false)
+				err := p.deleteOwnerJobOfPod(ctx, namespace, podName)
 				if err != nil {
 					continue
 				}
 			} else {
-				p.exporter.IncrementCreateProbeCount(nodeName, storageClass, true)
+				p.incrementProbeCount(pieProbeName, podName, nodeName, storageClass, true)
 			}
 		} else {
-			if time.Since(registeredTime) >= p.createProbeThreshold {
-				p.countedFlag[podName] = struct{}{}
-				p.exporter.IncrementCreateProbeCount(nodeName, storageClass, false)
-				err := p.deleteOwnerJobOfPod(ctx, podName)
+			if time.Since(registeredTime) >= probeThreshold {
+				p.countedFlag[nsAndPod] = struct{}{}
+				p.incrementProbeCount(pieProbeName, podName, nodeName, storageClass, false)
+				err := p.deleteOwnerJobOfPod(ctx, namespace, podName)
 				if err != nil {
 					continue
 				}
