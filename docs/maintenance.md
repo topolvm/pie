@@ -30,7 +30,7 @@ We should also update go.mod by the following commands. Please note that Kuberne
 
 ```bash
 $ VERSION=<upgrading Kubernetes release version>
-$ go get k8s.io/api@v${VERSION} k8s.io/apimachinery@v${VERSION} k8s.io/client-go@v${VERSION}
+$ go get k8s.io/api@v${VERSION} k8s.io/apimachinery@v${VERSION} k8s.io/client-go@v${VERSION} k8s.io/component-helpers@v${VERSION}
 ```
 
 Read the [`controller-runtime`'s release note](https://github.com/kubernetes-sigs/controller-runtime/releases), and update to the newest version that is compatible with all supported kubernetes versions. If there are breaking changes, we should decide how to manage these changes.
@@ -57,17 +57,26 @@ Edit the following files.
 The following tools do not depend on other software, use latest versions.
 To change their versions, edit `versions.mk`.
 - [kind](https://github.com/kubernetes-sigs/kind/releases)
+    - Update `KIND_NODE_VERSION` in `versions.mk`, too.
 - [helm](https://github.com/helm/helm/releases)
 - [kustomize](https://github.com/kubernetes-sigs/kustomize/releases)
+- [chart-testing](https://github.com/helm/chart-testing/releases)
 
 #### Depending modules
 
-Read `kubernetes' go.mod`(https://github.com/kubernetes/kubernetes/blob/\<upgrading Kubernetes release version\>/go.mod), and update the `prometheus/*` modules. Here is the example to update `prometheus/client_golang`.
+Read `kubernetes' go.mod`(https://github.com/kubernetes/kubernetes/blob/<upgrading Kubernetes release version\>/go.mod), and update the `prometheus/*` modules. Here is the example to update `prometheus/client_golang`.
 
 ```
 $ VERSION=<upgrading prometheus-related libraries release version>
 $ go get github.com/prometheus/client_golang@v${VERSION}
 ```
+
+The following modules don't depend on other softwares, so use their latest versions:
+- [github.com/onsi/ginkgo/v2](https://github.com/onsi/ginkgo/releases)
+- [github.com/onsi/gomega](https://github.com/onsi/gomega/releases)
+- [github.com/spf13/cobra](https://github.com/spf13/cobra/releases)
+- [k8s.io/klog/v2](https://github.com/kubernetes/klog/releases)
+- [sigs.k8s.io/yaml](https://github.com/kubernetes-sigs/yaml/releases)
 
 Then, please tidy up the dependencies.
 
