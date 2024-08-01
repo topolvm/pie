@@ -3,6 +3,7 @@ package pie
 import (
 	"context"
 	"os"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -12,6 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -30,6 +32,17 @@ func prepareObjects(ctx context.Context) error {
 		Provisioner: "sc-provisioner",
 	}
 	_, err := ctrl.CreateOrUpdate(ctx, k8sClient, storageClass, func() error { return nil })
+	if err != nil {
+		return err
+	}
+
+	storageClass2 := &storagev1.StorageClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "sc2",
+		},
+		Provisioner: "sc-provisioner",
+	}
+	_, err = ctrl.CreateOrUpdate(ctx, k8sClient, storageClass2, func() error { return nil })
 	if err != nil {
 		return err
 	}
@@ -146,6 +159,108 @@ var _ = Describe("PieProbe controller", func() {
 	AfterEach(func() {
 		stopFunc()
 		time.Sleep(100 * time.Millisecond)
+	})
+
+	It("should create PVCs with the capacity specified in the PieProbe resource", func() {
+		By("checking the default PVC's capacity is 100Mi")
+		Eventually(func(g Gomega) {
+			var pvcList corev1.PersistentVolumeClaimList
+			err := k8sClient.List(ctx, &pvcList, client.MatchingLabels(map[string]string{
+				"storage-class": "sc",
+				"node":          "192.168.0.1",
+			}))
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(len(pvcList.Items)).Should(Equal(1))
+
+			capacity, ok := pvcList.Items[0].Spec.Resources.Requests.Storage().AsInt64()
+			g.Expect(ok).To(BeTrue())
+			g.Expect(capacity).Should(Equal(int64(100 * 1024 * 1024)))
+
+			var cronJobList batchv1.CronJobList
+			err = k8sClient.List(ctx, &cronJobList)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(len(cronJobList.Items)).Should(Equal(3))
+			for _, cronJob := range cronJobList.Items {
+				if !strings.HasPrefix(cronJob.GetName(), "provision-") {
+					continue
+				}
+				g.Expect(
+					cronJob.Spec.JobTemplate.Spec.Template.Spec.Volumes[0].VolumeSource.Ephemeral.VolumeClaimTemplate.
+						Spec.Resources.Requests[corev1.ResourceStorage].Equal(*resource.NewQuantity(100*1024*1024, resource.BinarySI)),
+				).To(BeTrue())
+			}
+		}).Should(Succeed())
+
+		By("creating a new PieProbe with .spec.PVCCapacity 200Mi")
+		pieProbe2 := &piev1alpha1.PieProbe{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      "pie-probe-sc2",
+			},
+			Spec: piev1alpha1.PieProbeSpec{
+				MonitoringStorageClass: "sc2",
+				NodeSelector:           nodeSelector,
+				ProbePeriod:            1,
+				PVCCapacity:            resource.NewQuantity(200*1024*1024, resource.BinarySI),
+			},
+		}
+		_, err := ctrl.CreateOrUpdate(ctx, k8sClient, pieProbe2, func() error { return nil })
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking the PVC's capacity is now 200Mi")
+		Eventually(func(g Gomega) {
+			var pvcList corev1.PersistentVolumeClaimList
+			err := k8sClient.List(ctx, &pvcList, client.MatchingLabels(map[string]string{
+				"storage-class": "sc2",
+				"node":          "192.168.0.1",
+			}))
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(len(pvcList.Items)).Should(Equal(1))
+
+			capacity, ok := pvcList.Items[0].Spec.Resources.Requests.Storage().AsInt64()
+			g.Expect(ok).To(BeTrue())
+			g.Expect(capacity).Should(Equal(int64(200 * 1024 * 1024)))
+
+			var cronJobList batchv1.CronJobList
+			err = k8sClient.List(ctx, &cronJobList)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(len(cronJobList.Items)).Should(Equal(6))
+			for _, cronJob := range cronJobList.Items {
+				if !strings.HasPrefix(cronJob.GetName(), "provision-pie-probe--192.168.0.1-sc2-") {
+					continue
+				}
+				g.Expect(
+					cronJob.Spec.JobTemplate.Spec.Template.Spec.Volumes[0].VolumeSource.Ephemeral.VolumeClaimTemplate.
+						Spec.Resources.Requests[corev1.ResourceStorage].Equal(*resource.NewQuantity(200*1024*1024, resource.BinarySI)),
+				).To(BeTrue())
+			}
+		}).Should(Succeed())
+
+		By("cleaning up PVCs and CronJobs for sc2")
+		err = k8sClient.Delete(ctx, pieProbe2)
+		Expect(err).NotTo(HaveOccurred())
+		var pvcList corev1.PersistentVolumeClaimList
+		err = k8sClient.List(ctx, &pvcList, client.MatchingLabels(map[string]string{
+			"storage-class": "sc2",
+		}))
+		Expect(err).NotTo(HaveOccurred())
+		for _, pvc := range pvcList.Items {
+			pvc.ObjectMeta.Finalizers = []string{}
+			err = k8sClient.Update(ctx, &pvc)
+			Expect(err).NotTo(HaveOccurred())
+			err = k8sClient.Delete(ctx, &pvc)
+			Expect(err).NotTo(HaveOccurred())
+		}
+		var cronjobList batchv1.CronJobList
+		err = k8sClient.List(ctx, &cronjobList)
+		Expect(err).NotTo(HaveOccurred())
+		for _, cronjob := range cronjobList.Items {
+			if !strings.Contains(cronjob.GetName(), "-sc2-") {
+				continue
+			}
+			err = k8sClient.Delete(ctx, &cronjob)
+			Expect(err).NotTo(HaveOccurred())
+		}
 	})
 
 	It("should reject to edit monitoringStorageClass", func() {
