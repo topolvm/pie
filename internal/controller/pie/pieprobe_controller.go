@@ -87,21 +87,31 @@ func (r *PieProbeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, nil
 	}
 
-	// Create a provision-probe CronJob for each sc
-	err = r.createOrUpdateJob(
-		ctx,
-		ProvisionProbe,
-		&pieProbe,
-		nil,
-	)
-	if err != nil {
-		return ctrl.Result{}, err
+	if !pieProbe.Spec.DisableProvisionProbe {
+		if err := r.reconcileProvisionProbe(ctx, &pieProbe); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
+	if !pieProbe.Spec.DisableMountProbes {
+		if err := r.reconcileMountProbes(ctx, &pieProbe); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	return ctrl.Result{}, nil
+}
+
+func (r *PieProbeReconciler) reconcileProvisionProbe(ctx context.Context, pieProbe *piev1alpha1.PieProbe) error {
+	// Create a provision-probe CronJob for each sc
+	return r.createOrUpdateJob(ctx, ProvisionProbe, pieProbe, nil)
+}
+
+func (r *PieProbeReconciler) reconcileMountProbes(ctx context.Context, pieProbe *piev1alpha1.PieProbe) error {
 	// Get a node list and create a PVC and a mount-probe CronJob for each node and sc.
 	nodeSelector, err := nodeaffinity.NewNodeSelector(&pieProbe.Spec.NodeSelector)
 	if err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 	allNodeList := corev1.NodeList{}
 	r.client.List(ctx, &allNodeList)
@@ -112,22 +122,13 @@ func (r *PieProbeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 		availableNodeList = append(availableNodeList, node)
 
-		err = r.createOrUpdatePVC(
-			ctx,
-			node.Name,
-			&pieProbe,
-		)
+		err = r.createOrUpdatePVC(ctx, node.Name, pieProbe)
 		if err != nil {
-			return ctrl.Result{}, err
+			return err
 		}
-		err = r.createOrUpdateJob(
-			ctx,
-			MountProbe,
-			&pieProbe,
-			&node.Name,
-		)
+		err = r.createOrUpdateJob(ctx, MountProbe, pieProbe, &node.Name)
 		if err != nil {
-			return ctrl.Result{}, err
+			return err
 		}
 	}
 
@@ -144,7 +145,7 @@ func (r *PieProbeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}),
 	})
 	if err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 	for _, cronJob := range cronJobList.Items {
 		nodeName := cronJob.GetLabels()[constants.ProbeNodeLabelKey]
@@ -156,7 +157,7 @@ func (r *PieProbeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 		err := r.deleteCronJob(ctx, &cronJob)
 		if client.IgnoreNotFound(err) != nil {
-			return ctrl.Result{}, err
+			return err
 		}
 	}
 
@@ -168,7 +169,7 @@ func (r *PieProbeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}),
 	})
 	if err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 	for _, pvc := range pvcList.Items {
 		nodeName := pvc.GetLabels()[constants.ProbeNodeLabelKey]
@@ -177,11 +178,11 @@ func (r *PieProbeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		}
 		err = r.deletePVC(ctx, &pvc)
 		if client.IgnoreNotFound(err) != nil {
-			return ctrl.Result{}, err
+			return err
 		}
 	}
 
-	return ctrl.Result{}, nil
+	return nil
 }
 
 func (r *PieProbeReconciler) deletePVC(ctx context.Context, pvc *corev1.PersistentVolumeClaim) error {

@@ -39,6 +39,18 @@ spec:
           spec:
             description: PieProbeSpec defines the desired state of PieProbe
             properties:
+              disableMountProbes:
+                default: false
+                type: boolean
+                x-kubernetes-validations:
+                - message: disableMountProbes is immutable
+                  rule: self == oldSelf
+              disableProvisionProbe:
+                default: false
+                type: boolean
+                x-kubernetes-validations:
+                - message: disableProvisionProbe is immutable
+                  rule: self == oldSelf
               monitoringStorageClass:
                 type: string
                 x-kubernetes-validations:

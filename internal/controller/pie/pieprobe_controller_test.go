@@ -95,6 +95,44 @@ func prepareObjects(ctx context.Context) error {
 	return nil
 }
 
+func deletePieProbeAndReferencingResources(ctx context.Context, pieProbe *piev1alpha1.PieProbe) error {
+	if err := k8sClient.Delete(ctx, pieProbe); err != nil {
+		return err
+	}
+
+	var pvcList corev1.PersistentVolumeClaimList
+	if err := k8sClient.List(ctx, &pvcList, client.MatchingLabels(map[string]string{
+		"storage-class": pieProbe.Spec.MonitoringStorageClass,
+	})); err != nil {
+		return err
+	}
+
+	for _, pvc := range pvcList.Items {
+		pvc.ObjectMeta.Finalizers = []string{}
+		if err := k8sClient.Update(ctx, &pvc); err != nil {
+			return err
+		}
+		if err := k8sClient.Delete(ctx, &pvc); err != nil {
+			return err
+		}
+	}
+
+	var cronjobList batchv1.CronJobList
+	if err := k8sClient.List(ctx, &cronjobList, client.MatchingLabels(map[string]string{
+		"storage-class": pieProbe.Spec.MonitoringStorageClass,
+	})); err != nil {
+		return err
+	}
+
+	for _, cronjob := range cronjobList.Items {
+		if err := k8sClient.Delete(ctx, &cronjob); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 var _ = Describe("PieProbe controller", func() {
 	ctx := context.Background()
 	var stopFunc func()
@@ -237,30 +275,75 @@ var _ = Describe("PieProbe controller", func() {
 		}).Should(Succeed())
 
 		By("cleaning up PVCs and CronJobs for sc2")
-		err = k8sClient.Delete(ctx, pieProbe2)
-		Expect(err).NotTo(HaveOccurred())
-		var pvcList corev1.PersistentVolumeClaimList
-		err = k8sClient.List(ctx, &pvcList, client.MatchingLabels(map[string]string{
-			"storage-class": "sc2",
-		}))
-		Expect(err).NotTo(HaveOccurred())
-		for _, pvc := range pvcList.Items {
-			pvc.ObjectMeta.Finalizers = []string{}
-			err = k8sClient.Update(ctx, &pvc)
-			Expect(err).NotTo(HaveOccurred())
-			err = k8sClient.Delete(ctx, &pvc)
-			Expect(err).NotTo(HaveOccurred())
+		deletePieProbeAndReferencingResources(ctx, pieProbe2)
+	})
+
+	It("should create only mount probes if .spec.disableProvisionProbes is true", func() {
+		By("creating a new PieProbe with .spec.disableProvisionProbes true")
+		pieProbe2 := &piev1alpha1.PieProbe{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      "pie-probe-sc2",
+			},
+			Spec: piev1alpha1.PieProbeSpec{
+				MonitoringStorageClass: "sc2",
+				NodeSelector:           nodeSelector,
+				ProbePeriod:            1,
+				DisableProvisionProbe:  true,
+			},
 		}
-		var cronjobList batchv1.CronJobList
-		err = k8sClient.List(ctx, &cronjobList)
+		_, err := ctrl.CreateOrUpdate(ctx, k8sClient, pieProbe2, func() error { return nil })
 		Expect(err).NotTo(HaveOccurred())
-		for _, cronjob := range cronjobList.Items {
-			if !strings.Contains(cronjob.GetName(), "-sc2-") {
-				continue
+
+		By("checking mount probes exist and provision probes DO NOT exist")
+		Eventually(func(g Gomega) {
+			var cronjobList batchv1.CronJobList
+			err = k8sClient.List(context.Background(), &cronjobList, client.MatchingLabels(map[string]string{
+				"storage-class": "sc2",
+			}))
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(cronjobList.Items).To(HaveLen(2))
+			for _, cronjob := range cronjobList.Items {
+				g.Expect(cronjob.GetName()).To(HavePrefix("mount-"))
 			}
-			err = k8sClient.Delete(ctx, &cronjob)
-			Expect(err).NotTo(HaveOccurred())
+		}).Should(Succeed())
+
+		By("cleaning up PVCs and CronJobs for sc2")
+		deletePieProbeAndReferencingResources(ctx, pieProbe2)
+	})
+
+	It("should create only provision probes if .spec.disableMountProbes is true", func() {
+		By("creating a new PieProbe with .spec.disableMountProbes true")
+		pieProbe2 := &piev1alpha1.PieProbe{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      "pie-probe-sc2",
+			},
+			Spec: piev1alpha1.PieProbeSpec{
+				MonitoringStorageClass: "sc2",
+				NodeSelector:           nodeSelector,
+				ProbePeriod:            1,
+				DisableMountProbes:     true,
+			},
 		}
+		_, err := ctrl.CreateOrUpdate(ctx, k8sClient, pieProbe2, func() error { return nil })
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking provision probes exist and mount probes DO NOT exist")
+		Eventually(func(g Gomega) {
+			var cronjobList batchv1.CronJobList
+			err = k8sClient.List(ctx, &cronjobList, client.MatchingLabels(map[string]string{
+				"storage-class": "sc2",
+			}))
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(cronjobList.Items).To(HaveLen(1))
+			for _, cronjob := range cronjobList.Items {
+				g.Expect(cronjob.GetName()).To(HavePrefix("provision-"))
+			}
+		}).Should(Succeed())
+
+		By("cleaning up PVCs and CronJobs for sc2")
+		deletePieProbeAndReferencingResources(ctx, pieProbe2)
 	})
 
 	It("should reject to edit monitoringStorageClass", func() {
