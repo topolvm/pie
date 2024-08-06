@@ -32,6 +32,16 @@ type PieProbeSpec struct {
 	//+kubebuilder:validation:Optional
 	//+kubebuilder:validation:XValidation:rule="self == oldSelf",message="pvcCapacity is immutable"
 	PVCCapacity *resource.Quantity `json:"pvcCapacity"`
+
+	//+kubebuilder:default:=false
+	//+kubebuilder:validation:Optional
+	//+kubebuilder:validation:XValidation:rule="self == oldSelf",message="disableProvisionProbe is immutable"
+	DisableProvisionProbes bool `json:"disableProvisionProbe"`
+
+	//+kubebuilder:default:=false
+	//+kubebuilder:validation:Optional
+	//+kubebuilder:validation:XValidation:rule="self == oldSelf",message="disableMountProbe is immutable"
+	DisableMountProbes bool `json:"disableMountProbe"`
 }
 
 // PieProbeStatus defines the observed state of PieProbe
