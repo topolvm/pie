@@ -39,6 +39,18 @@ spec:
           spec:
             description: PieProbeSpec defines the desired state of PieProbe
             properties:
+              disableMountProbe:
+                default: false
+                type: boolean
+                x-kubernetes-validations:
+                - message: disableMountProbe is immutable
+                  rule: self == oldSelf
+              disableProvisionProbe:
+                default: false
+                type: boolean
+                x-kubernetes-validations:
+                - message: disableProvisionProbe is immutable
+                  rule: self == oldSelf
               monitoringStorageClass:
                 type: string
                 x-kubernetes-validations:
@@ -143,6 +155,16 @@ spec:
               probeThreshold:
                 default: 1m
                 type: string
+              pvcCapacity:
+                anyOf:
+                - type: integer
+                - type: string
+                default: 100Mi
+                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                x-kubernetes-int-or-string: true
+                x-kubernetes-validations:
+                - message: pvcCapacity is immutable
+                  rule: self == oldSelf
             required:
             - monitoringStorageClass
             - nodeSelector

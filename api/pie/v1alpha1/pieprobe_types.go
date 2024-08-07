@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -26,6 +27,21 @@ type PieProbeSpec struct {
 
 	//+kubebuilder:default:="1m"
 	ProbeThreshold metav1.Duration `json:"probeThreshold"`
+
+	//+kubebuilder:default:="100Mi"
+	//+kubebuilder:validation:Optional
+	//+kubebuilder:validation:XValidation:rule="self == oldSelf",message="pvcCapacity is immutable"
+	PVCCapacity *resource.Quantity `json:"pvcCapacity"`
+
+	//+kubebuilder:default:=false
+	//+kubebuilder:validation:Optional
+	//+kubebuilder:validation:XValidation:rule="self == oldSelf",message="disableProvisionProbe is immutable"
+	DisableProvisionProbes bool `json:"disableProvisionProbe"`
+
+	//+kubebuilder:default:=false
+	//+kubebuilder:validation:Optional
+	//+kubebuilder:validation:XValidation:rule="self == oldSelf",message="disableMountProbe is immutable"
+	DisableMountProbes bool `json:"disableMountProbe"`
 }
 
 // PieProbeStatus defines the observed state of PieProbe
