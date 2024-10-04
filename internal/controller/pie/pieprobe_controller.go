@@ -353,9 +353,7 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 	pieProbe *piev1alpha1.PieProbe,
 	nodeName *string,
 ) error {
-	logger := log.FromContext(ctx)
-	logger.Info("createOrUpdateJob")
-	defer logger.Info("createOrUpdateJob Finished")
+	_ = log.FromContext(ctx)
 
 	cronjob := &batchv1.CronJob{}
 	cronjob.SetNamespace(pieProbe.GetNamespace())
@@ -363,7 +361,7 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 
 	storageClass := pieProbe.Spec.MonitoringStorageClass
 
-	op, err := ctrl.CreateOrUpdate(ctx, r.client, cronjob, func() error {
+	_, err := ctrl.CreateOrUpdate(ctx, r.client, cronjob, func() error {
 		label := map[string]string{
 			constants.ProbeStorageClassLabelKey: storageClass,
 			constants.ProbePieProbeLabelKey:     pieProbe.GetName(),
@@ -491,9 +489,7 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 	if err != nil {
 		return fmt.Errorf("failed to create CronJob: %s", getCronJobName(kind, nodeName, pieProbe))
 	}
-	if op != controllerutil.OperationResultNone {
-		logger.Info(fmt.Sprintf("CronJob successfully created: %s", getCronJobName(kind, nodeName, pieProbe)))
-	}
+
 	return nil
 }
 
