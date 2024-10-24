@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
@@ -152,9 +153,13 @@ var _ = Describe("PieProbe controller", func() {
 	}
 
 	BeforeEach(func() {
+		skipNameValidation := true
 		mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 			Scheme:  scheme,
 			Metrics: metricsserver.Options{BindAddress: "0"},
+			Controller: config.Controller{
+				SkipNameValidation: &skipNameValidation,
+			},
 		})
 		Expect(err).NotTo(HaveOccurred())
 
