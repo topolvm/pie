@@ -39,13 +39,13 @@ The result should look something like:
 Bump version
 ------------
 
-1. Go to [the rule setting page](https://github.com/topolvm/pie/settings/rules/1550843) and change the value of "Enforcement status" to `Active`.
-
-2. Determine a new version number by [checking the differences](https://github.com/topolvm/pie/compare/vX.Y.Z...main) since the last release. Then, define the `VERSION` variable.
+1. Check if a new release is required by [checking the differences](https://github.com/topolvm/pie/compare/vX.Y.Z...main) since the last release. If so, determine a new version number and define the `VERSION` variable.
 
     ```console
     VERSION=1.2.3
     ```
+
+2. Go to [the rule setting page](https://github.com/topolvm/pie/settings/rules/1550843) and change the value of "Enforcement status" to `Active`.
 
 3. Add a new tag and push it.
 
