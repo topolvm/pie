@@ -1,16 +1,16 @@
 # https://github.com/helm/chart-testing/releases
-CHART_TESTING_VERSION := 3.11.0
+CHART_TESTING_VERSION := 3.12.0
 # https://github.com/kubernetes-sigs/controller-tools/releases
-CONTROLLER_TOOLS_VERSION := v0.16.4
+CONTROLLER_TOOLS_VERSION := v0.17.2
 # https://github.com/helm/helm/releases
-HELM_VERSION := 3.16.2
+HELM_VERSION := 3.17.1
 # https://github.com/kubernetes-sigs/kind/releases
-KIND_VERSION := v0.24.0
+KIND_VERSION := v0.27.0
 # https://github.com/kubernetes-sigs/kustomize/releases
-KUSTOMIZE_VERSION := v5.5.0
+KUSTOMIZE_VERSION := v5.6.0
 
 # It is set by CI using the environment variable, use conditional assignment.
-KUBERNETES_VERSION ?= 1.31
+KUBERNETES_VERSION ?= 1.32
 
 # Tools versions which are defined in go.mod
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
@@ -22,9 +22,9 @@ ENVTEST_K8S_VERSION := $(KUBERNETES_VERSION).x
 
 # The container version of kind must be with the digest.
 # ref. https://github.com/kubernetes-sigs/kind/releases
-KIND_NODE_VERSION := kindest/node:v1.31.0@sha256:53df588e04085fd41ae12de0c3fe4c72f7013bba32a20e7325357a1ac94ba865
-ifeq ($(KUBERNETES_VERSION), 1.30)
-	KIND_NODE_VERSION := kindest/node:v1.30.4@sha256:976ea815844d5fa93be213437e3ff5754cd599b040946b5cca43ca45c2047114
-else ifeq ($(KUBERNETES_VERSION), 1.29)
-	KIND_NODE_VERSION := kindest/node:v1.29.8@sha256:d46b7aa29567e93b27f7531d258c372e829d7224b25e3fc6ffdefed12476d3aa
+KIND_NODE_VERSION := kindest/node:v1.32.2@sha256:f226345927d7e348497136874b6d207e0b32cc52154ad8323129352923a3142f
+ifeq ($(KUBERNETES_VERSION), 1.31)
+	KIND_NODE_VERSION := kindest/node:v1.31.6@sha256:28b7cbb993dfe093c76641a0c95807637213c9109b761f1d422c2400e22b8e87
+else ifeq ($(KUBERNETES_VERSION), 1.30)
+	KIND_NODE_VERSION := kindest/node:v1.30.10@sha256:4de75d0e82481ea846c0ed1de86328d821c1e6a6a91ac37bf804e5313670e507
 endif
