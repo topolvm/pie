@@ -280,6 +280,62 @@ var _ = Describe("PieProbe controller", func() {
 		}).Should(Succeed())
 
 		By("cleaning up PVCs and CronJobs for sc2")
+		err = deletePieProbeAndReferencingResources(ctx, pieProbe2)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
+	It("should create CronJob with the resource specified in the PieProbe resource", func() {
+		By("checking the default CronJob's resource dose not exist")
+		Eventually(func(g Gomega) {
+			var cronjobList batchv1.CronJobList
+			err := k8sClient.List(ctx, &cronjobList, client.MatchingLabels(map[string]string{
+				"storage-class": "sc",
+			}))
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(cronjobList.Items).To(HaveLen(3))
+
+			cronjob := cronjobList.Items[0]
+			resources := cronjob.Spec.JobTemplate.Spec.Template.Spec.Resources
+			g.Expect(resources).To(BeNil())
+		}).Should(Succeed())
+
+		By("creating a new CronJob via PieProbe with .spec.resources")
+		pieProbe2 := &piev1alpha1.PieProbe{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "default",
+				Name:      "pie-probe-sc2",
+			},
+			Spec: piev1alpha1.PieProbeSpec{
+				MonitoringStorageClass: "sc2",
+				NodeSelector:           nodeSelector,
+				ProbePeriod:            1,
+				Resources: corev1.ResourceRequirements{
+					Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m")},
+					Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("50m")},
+				},
+			},
+		}
+		_, err := ctrl.CreateOrUpdate(ctx, k8sClient, pieProbe2, func() error { return nil })
+		Expect(err).NotTo(HaveOccurred())
+
+		By("checking the CronJob's resource specified")
+		Eventually(func(g Gomega) {
+			var cronjobList batchv1.CronJobList
+			err := k8sClient.List(ctx, &cronjobList, client.MatchingLabels(map[string]string{
+				"storage-class": "sc2",
+			}))
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(cronjobList.Items).To(HaveLen(3))
+
+			cronjob := cronjobList.Items[0]
+			resources := cronjob.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Resources
+
+			g.Expect(resources).NotTo(BeNil())
+			g.Expect(resources.Limits).To(Equal(corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m")}))
+			g.Expect(resources.Requests).To(Equal(corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("50m")}))
+		}).Should(Succeed())
+
+		By("cleaning up PVCs and CronJobs for sc2")
 		deletePieProbeAndReferencingResources(ctx, pieProbe2)
 	})
 
@@ -303,7 +359,7 @@ var _ = Describe("PieProbe controller", func() {
 		By("checking mount probes exist and provision probes DO NOT exist")
 		Eventually(func(g Gomega) {
 			var cronjobList batchv1.CronJobList
-			err = k8sClient.List(context.Background(), &cronjobList, client.MatchingLabels(map[string]string{
+			err = k8sClient.List(ctx, &cronjobList, client.MatchingLabels(map[string]string{
 				"storage-class": "sc2",
 			}))
 			g.Expect(err).NotTo(HaveOccurred())
@@ -314,7 +370,8 @@ var _ = Describe("PieProbe controller", func() {
 		}).Should(Succeed())
 
 		By("cleaning up PVCs and CronJobs for sc2")
-		deletePieProbeAndReferencingResources(ctx, pieProbe2)
+		err = deletePieProbeAndReferencingResources(ctx, pieProbe2)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should create only provision probes if .spec.disableMountProbes is true", func() {
@@ -348,7 +405,8 @@ var _ = Describe("PieProbe controller", func() {
 		}).Should(Succeed())
 
 		By("cleaning up PVCs and CronJobs for sc2")
-		deletePieProbeAndReferencingResources(ctx, pieProbe2)
+		err = deletePieProbeAndReferencingResources(ctx, pieProbe2)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("should reject to edit monitoringStorageClass", func() {
@@ -378,7 +436,7 @@ var _ = Describe("PieProbe controller", func() {
 			var cronJobList batchv1.CronJobList
 			err := k8sClient.List(ctx, &cronJobList)
 			g.Expect(err).NotTo(HaveOccurred())
-			g.Expect(len(cronJobList.Items)).Should(Equal(3))
+			g.Expect(cronJobList.Items).To(HaveLen(3))
 			for _, cronJob := range cronJobList.Items {
 				g.Expect(cronJob.OwnerReferences).Should(Equal([]metav1.OwnerReference{{
 					APIVersion:         "pie.topolvm.io/v1alpha1",

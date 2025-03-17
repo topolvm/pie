@@ -42,6 +42,9 @@ type PieProbeSpec struct {
 	//+kubebuilder:validation:Optional
 	//+kubebuilder:validation:XValidation:rule="self == oldSelf",message="disableMountProbes is immutable"
 	DisableMountProbes bool `json:"disableMountProbes"`
+
+	//+kubebuilder:validation:Optional
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // PieProbeStatus defines the observed state of PieProbe
