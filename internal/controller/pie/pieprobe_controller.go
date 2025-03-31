@@ -392,6 +392,7 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 		container := &cronjob.Spec.JobTemplate.Spec.Template.Spec.Containers[0]
 		container.Name = constants.ProbeContainerName
 		container.Image = r.containerImage
+		container.Resources = pieProbe.Spec.Resources
 
 		var userID int64 = 1001
 		var groupID int64 = 1001
