@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kubernetes_versions: ["1.32", "1.31", "1.30"]
+        kubernetes_versions: ["1.33", "1.32", "1.31"]
     env:
       KUBERNETES_VERSION: ${{ matrix.kubernetes_versions }}
     steps:
