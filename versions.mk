@@ -16,9 +16,7 @@ KUBERNETES_VERSION ?= 1.33
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 CONTROLLER_RUNTIME_VERSION := $(shell awk '/sigs\.k8s\.io\/controller-runtime/ {print substr($$2, 2)}' $(SELF_DIR)/go.mod)
 
-ENVTEST_BRANCH := release-$(shell echo $(CONTROLLER_RUNTIME_VERSION) | cut -d "." -f 1-2)
-# NOTE: the suffix .x means wildcard match so specifying the latest patch version.
-ENVTEST_K8S_VERSION := $(KUBERNETES_VERSION).x
+ENVTEST_K8S_VERSION := $(KUBERNETES_VERSION).0
 
 # The container version of kind must be with the digest.
 # ref. https://github.com/kubernetes-sigs/kind/releases
