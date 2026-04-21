@@ -22,6 +22,7 @@ import (
 	. "github.com/onsi/gomega"
 	io_prometheus_client "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
+	"github.com/prometheus/common/model"
 	appsv1 "k8s.io/api/apps/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -154,7 +155,7 @@ var _ = Describe("PieProbe resource", func() {
 			g.Expect(err).NotTo(HaveOccurred())
 			defer resp.Body.Close()
 
-			var parser expfmt.TextParser
+			parser := expfmt.NewTextParser(model.UTF8Validation)
 			metricFamilies, err := parser.TextToMetricFamilies(resp.Body)
 			g.Expect(err).NotTo(HaveOccurred())
 
