@@ -46,9 +46,11 @@ func (di *diskInfoImpl) Export(metrics *DiskMetrics) error {
 		return err
 	}
 
+	var resp *http.Response
 	for retryCounter := 0; retryCounter < maxRetryCount; retryCounter++ {
-		_, err = http.Post(di.url, "application/json", bytes.NewReader(s))
+		resp, err = http.Post(di.url, "application/json", bytes.NewReader(s))
 		if err == nil {
+			_ = resp.Body.Close()
 			return nil
 		}
 		log.Printf("failed to post data: %v", err)
