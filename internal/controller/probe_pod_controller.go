@@ -105,7 +105,9 @@ func (r *ProbePodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ProbePodReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	mgr.Add(r.po)
+	if err := mgr.Add(r.po); err != nil {
+		return err
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.Pod{}).
 		Complete(r)

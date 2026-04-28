@@ -2,8 +2,8 @@ package metrics
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/topolvm/pie/types"
@@ -28,14 +28,27 @@ func (rh *receiver) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if receivedData.PieProbeName == "" {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "PieProbeName is empty", http.StatusBadRequest)
 		return
 	}
 
-	rh.metrics.SetLatencyOnMountProbe(receivedData.PieProbeName, receivedData.Node, receivedData.StorageClass, receivedData.ReadLatency, receivedData.WriteLatency)
-	rh.metrics.IncrementPerformanceOnMountProbeCount(receivedData.PieProbeName, receivedData.Node, receivedData.StorageClass, receivedData.PerformanceProbeSucceed)
+	rh.metrics.SetLatencyOnMountProbe(
+		receivedData.PieProbeName,
+		receivedData.Node,
+		receivedData.StorageClass,
+		receivedData.ReadLatency,
+		receivedData.WriteLatency,
+	)
+	rh.metrics.IncrementPerformanceOnMountProbeCount(
+		receivedData.PieProbeName,
+		receivedData.Node,
+		receivedData.StorageClass,
+		receivedData.PerformanceProbeSucceed,
+	)
 
-	fmt.Fprintf(w, "OK")
+	if _, err := w.Write([]byte("OK")); err != nil {
+		slog.Error("failed to write data", "error", err)
+	}
 }
 
 func NewReceiver(m MetricsExporter) http.Handler {

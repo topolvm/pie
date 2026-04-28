@@ -45,7 +45,12 @@ var provisionProbeCmd = &cobra.Command{
 
 func init() {
 	fs := probeCmd.Flags()
-	fs.StringVar(&probeConfig.controllerAddr, "destination-address", "http://localhost:8080", "metrics aggregator's address")
+	fs.StringVar(
+		&probeConfig.controllerAddr,
+		"destination-address",
+		"http://localhost:8080",
+		"metrics aggregator's address",
+	)
 	fs.StringVar(&probeConfig.storageClass, "storage-class", "", "target StorageClass name")
 	fs.StringVar(&probeConfig.fioFilename, "path", "/test", "target I/O test directory path")
 	fs.StringVar(&probeConfig.nodeName, "node-name", "", "node name")

@@ -51,7 +51,12 @@ var (
 func init() {
 	flags := controllerCmd.Flags()
 	flags.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
-	flags.StringVar(&healthProbeAddr, "health-probe-bind-address", ":8081", "The address the health probe endpoint binds to.")
+	flags.StringVar(
+		&healthProbeAddr,
+		"health-probe-bind-address",
+		":8081",
+		"The address the health probe endpoint binds to.",
+	)
 	flags.BoolVar(&enableLeaderElection, "leader-elect", true,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -177,7 +182,9 @@ func makeReceiveRunner(exporter metrics.MetricsExporter) manager.Runnable {
 
 		go func() {
 			<-ctx.Done()
-			s.Close()
+			if err := s.Close(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				setupLog.Error(err, "failed to close receiver server")
+			}
 		}()
 
 		return s.ListenAndServe()

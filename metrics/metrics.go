@@ -1,6 +1,8 @@
 package metrics
 
 import (
+	"strconv"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
@@ -12,9 +14,9 @@ const (
 
 type MetricsExporter interface {
 	SetLatencyOnMountProbe(pieProbeName, node, storageClass string, readLatency, writeLatency float64)
-	IncrementPerformanceOnMountProbeCount(pieProbeName string, node string, storageClass string, succeed bool)
+	IncrementPerformanceOnMountProbeCount(pieProbeName, node, storageClass string, succeed bool)
 	IncrementProvisionProbeCount(pieProbeName string, storageClass string, onTime bool)
-	IncrementMountProbeCount(pieProbeName string, node string, storageClass string, onTime bool)
+	IncrementMountProbeCount(pieProbeName, node, storageClass string, onTime bool)
 }
 
 type metricExporterImpl struct {
@@ -83,16 +85,19 @@ func (m *metricExporterImpl) registerMetrics() {
 	metrics.Registry.MustRegister(m.mountProbeCount)
 }
 
-func (m *metricExporterImpl) SetLatencyOnMountProbe(pieProbeName string, node string, storageClass string, readLatency, writeLatency float64) {
+func (m *metricExporterImpl) SetLatencyOnMountProbe(
+	pieProbeName, node, storageClass string,
+	readLatency, writeLatency float64,
+) {
 	m.writeLatencyOnMountProbeGauge.WithLabelValues(pieProbeName, node, storageClass).Set(writeLatency)
 	m.readLatencyOnMountProbeGauge.WithLabelValues(pieProbeName, node, storageClass).Set(readLatency)
 }
 
-func (m *metricExporterImpl) IncrementPerformanceOnMountProbeCount(pieProbeName string, node string, storageClass string, succeed bool) {
-	succeedStr := "false"
-	if succeed {
-		succeedStr = "true"
-	}
+func (m *metricExporterImpl) IncrementPerformanceOnMountProbeCount(
+	pieProbeName, node, storageClass string,
+	succeed bool,
+) {
+	succeedStr := strconv.FormatBool(succeed)
 	m.performanceOnMountProbeCount.WithLabelValues(pieProbeName, node, storageClass, succeedStr).Inc()
 }
 
@@ -104,10 +109,10 @@ func (m *metricExporterImpl) IncrementProvisionProbeCount(pieProbeName string, s
 	m.provisionProbeCount.WithLabelValues(pieProbeName, storageClass, onTimeStr).Inc()
 }
 
-func (m *metricExporterImpl) IncrementMountProbeCount(pieProbeName string, node string, storageClass string, onTime bool) {
-	onTimeStr := "false"
-	if onTime {
-		onTimeStr = "true"
-	}
+func (m *metricExporterImpl) IncrementMountProbeCount(
+	pieProbeName, node, storageClass string,
+	onTime bool,
+) {
+	onTimeStr := strconv.FormatBool(onTime)
 	m.mountProbeCount.WithLabelValues(pieProbeName, node, storageClass, onTimeStr).Inc()
 }

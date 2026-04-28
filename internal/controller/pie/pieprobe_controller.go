@@ -114,7 +114,10 @@ func (r *PieProbeReconciler) reconcileMountProbes(ctx context.Context, pieProbe 
 		return err
 	}
 	allNodeList := corev1.NodeList{}
-	r.client.List(ctx, &allNodeList)
+	err = r.client.List(ctx, &allNodeList)
+	if err != nil {
+		return err
+	}
 	availableNodeList := []corev1.Node{}
 	for _, node := range allNodeList.Items {
 		if !nodeSelector.Match(&node) {
@@ -258,13 +261,16 @@ func (r *PieProbeReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func getPVCName(nodeName string, pieProbe *piev1alpha1.PieProbe) string {
+func getPVCName(nodeName string, pieProbe *piev1alpha1.PieProbe) (string, error) {
 	pieProbeName := pieProbe.Name
 	storageClass := pieProbe.Spec.MonitoringStorageClass
 
-	sha1 := sha1.New()
-	io.WriteString(sha1, pieProbeName+"\000"+nodeName+"\000"+storageClass)
-	hashedName := hex.EncodeToString(sha1.Sum(nil))
+	sha1Hash := sha1.New()
+	_, err := io.WriteString(sha1Hash, pieProbeName+"\000"+nodeName+"\000"+storageClass)
+	if err != nil {
+		return "", fmt.Errorf("failed to hash pvc name: %w", err)
+	}
+	hashedName := hex.EncodeToString(sha1Hash.Sum(nil))
 
 	if len(pieProbeName) > 10 {
 		pieProbeName = pieProbeName[:10]
@@ -275,7 +281,7 @@ func getPVCName(nodeName string, pieProbe *piev1alpha1.PieProbe) string {
 	if len(storageClass) > 14 {
 		storageClass = storageClass[:14]
 	}
-	return fmt.Sprintf("%s-%s-%s-%s-%s", constants.PVCNamePrefix, pieProbeName, nodeName, storageClass, hashedName[:6])
+	return fmt.Sprintf("%s-%s-%s-%s-%s", constants.PVCNamePrefix, pieProbeName, nodeName, storageClass, hashedName[:6]), nil
 }
 
 func (r *PieProbeReconciler) createOrUpdatePVC(
@@ -285,7 +291,10 @@ func (r *PieProbeReconciler) createOrUpdatePVC(
 ) error {
 	logger := log.FromContext(ctx)
 
-	pvcName := getPVCName(nodeName, pieProbe)
+	pvcName, err := getPVCName(nodeName, pieProbe)
+	if err != nil {
+		return err
+	}
 	storageClass := pieProbe.Spec.MonitoringStorageClass
 
 	pvc := &corev1.PersistentVolumeClaim{}
@@ -308,7 +317,9 @@ func (r *PieProbeReconciler) createOrUpdatePVC(
 		}
 		pvc.Spec.Resources.Requests[corev1.ResourceStorage] = *pieProbe.Spec.PVCCapacity
 
-		ctrl.SetControllerReference(pieProbe, pvc, r.client.Scheme())
+		if err := ctrl.SetControllerReference(pieProbe, pvc, r.client.Scheme()); err != nil {
+			return err
+		}
 
 		return nil
 	})
@@ -354,14 +365,18 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 	nodeName *string,
 ) error {
 	_ = log.FromContext(ctx)
+	cronJobName, err := getCronJobName(kind, nodeName, pieProbe)
+	if err != nil {
+		return err
+	}
 
 	cronjob := &batchv1.CronJob{}
 	cronjob.SetNamespace(pieProbe.GetNamespace())
-	cronjob.SetName(getCronJobName(kind, nodeName, pieProbe))
+	cronjob.SetName(cronJobName)
 
 	storageClass := pieProbe.Spec.MonitoringStorageClass
 
-	_, err := ctrl.CreateOrUpdate(ctx, r.client, cronjob, func() error {
+	_, err = ctrl.CreateOrUpdate(ctx, r.client, cronjob, func() error {
 		label := map[string]string{
 			constants.ProbeStorageClassLabelKey: storageClass,
 			constants.ProbePieProbeLabelKey:     pieProbe.GetName(),
@@ -470,25 +485,31 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 					},
 				},
 			}
+			pvcName, err := getPVCName(*nodeName, pieProbe)
+			if err != nil {
+				return err
+			}
 			cronjob.Spec.JobTemplate.Spec.Template.Spec.Volumes = []corev1.Volume{
 				{
 					Name: volumeName,
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: getPVCName(*nodeName, pieProbe),
+							ClaimName: pvcName,
 						},
 					},
 				},
 			}
 		}
 
-		ctrl.SetControllerReference(pieProbe, cronjob, r.client.Scheme())
+		if err := ctrl.SetControllerReference(pieProbe, cronjob, r.client.Scheme()); err != nil {
+			return err
+		}
 
 		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to create CronJob: %s", getCronJobName(kind, nodeName, pieProbe))
+		return fmt.Errorf("failed to create CronJob: %s", cronJobName)
 	}
 
 	return nil
@@ -501,7 +522,7 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 // However, if the node and StorageClass names are too long, the CronJob name will not fit in 52 characters.
 // So we cut off the node and StorageClass names to an appropriate length and added a hash value at the end
 // to balance readability and uniqueness.
-func getCronJobName(kind int, nodeNamePtr *string, pieProbe *piev1alpha1.PieProbe) string {
+func getCronJobName(kind int, nodeNamePtr *string, pieProbe *piev1alpha1.PieProbe) (string, error) {
 	nodeName := ""
 	if nodeNamePtr != nil {
 		nodeName = *nodeNamePtr
@@ -510,9 +531,12 @@ func getCronJobName(kind int, nodeNamePtr *string, pieProbe *piev1alpha1.PieProb
 	pieProbeName := pieProbe.Name
 	storageClass := pieProbe.Spec.MonitoringStorageClass
 
-	sha1 := sha1.New()
-	io.WriteString(sha1, pieProbeName+"\000"+nodeName+"\000"+storageClass)
-	hashedName := hex.EncodeToString(sha1.Sum(nil))
+	sha1Hash := sha1.New()
+	_, err := io.WriteString(sha1Hash, pieProbeName+"\000"+nodeName+"\000"+storageClass)
+	if err != nil {
+		return "", fmt.Errorf("failed to hash cronjob name: %w", err)
+	}
+	hashedName := hex.EncodeToString(sha1Hash.Sum(nil))
 
 	if len(pieProbeName) > 10 {
 		pieProbeName = pieProbeName[:10]
@@ -525,9 +549,9 @@ func getCronJobName(kind int, nodeNamePtr *string, pieProbe *piev1alpha1.PieProb
 	}
 
 	if kind == ProvisionProbe {
-		return fmt.Sprintf("%s-%s-%s-%s", constants.ProvisionProbeNamePrefix, pieProbeName, storageClass, hashedName[:6])
+		return fmt.Sprintf("%s-%s-%s-%s", constants.ProvisionProbeNamePrefix, pieProbeName, storageClass, hashedName[:6]), nil
 	} else { // kind == MountProbe
-		return fmt.Sprintf("%s-%s-%s-%s-%s", constants.MountProbeNamePrefix, pieProbeName, nodeName, storageClass, hashedName[:6])
+		return fmt.Sprintf("%s-%s-%s-%s-%s", constants.MountProbeNamePrefix, pieProbeName, nodeName, storageClass, hashedName[:6]), nil
 	}
 }
 

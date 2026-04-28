@@ -1,0 +1,40 @@
+version: "2"
+run:
+  timeout: 5m
+  allow-parallel-runners: true
+linters:
+  settings:
+    staticcheck:
+      dot-import-whitelist: # allow dot imports for the following packages
+        - github.com/onsi/gomega
+        - github.com/onsi/ginkgo/v2
+  default: none
+  enable:
+    - copyloopvar
+    - dupl
+    - errcheck
+    - goconst
+    - gocyclo
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - prealloc
+    - staticcheck
+    - unconvert
+    - unparam
+    - unused
+  exclusions:
+    rules:
+      - path: "api/*"
+        linters:
+          - lll
+      - path: "internal/controller/pie/*"
+        linters:
+          - dupl
+          - lll
+formatters:
+  enable:
+    - gofmt
+    - goimports
