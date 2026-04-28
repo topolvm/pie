@@ -3,6 +3,7 @@ package probe
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -50,6 +51,7 @@ func (di *diskInfoImpl) Export(metrics *DiskMetrics) error {
 		if err == nil {
 			return nil
 		}
+		log.Printf("failed to post data: %v", err)
 		time.Sleep(time.Second * retryIntervalSec)
 	}
 
