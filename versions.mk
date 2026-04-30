@@ -2,6 +2,8 @@
 CHART_TESTING_VERSION := 3.14.0
 # https://github.com/kubernetes-sigs/controller-tools/releases
 CONTROLLER_TOOLS_VERSION := v0.20.1
+# https://github.com/golangci/golangci-lint/releases
+GOLANGCI_LINT_VERSION := v2.11.4
 # https://github.com/helm/helm/releases
 HELM_VERSION := 4.1.4
 # https://github.com/kubernetes-sigs/kind/releases

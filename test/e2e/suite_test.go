@@ -6,7 +6,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -68,8 +67,6 @@ func TestMtest(t *testing.T) {
 	if ns == "" {
 		t.Fatal("No TEST_NAMESPACE specified.")
 	}
-
-	rand.Seed(time.Now().UnixNano())
 
 	RegisterFailHandler(Fail)
 
@@ -153,7 +150,9 @@ var _ = Describe("PieProbe resource", func() {
 		Eventually(func(g Gomega) {
 			resp, err := http.Get("http://localhost:8080/metrics")
 			g.Expect(err).NotTo(HaveOccurred())
-			defer resp.Body.Close()
+			defer func() {
+				g.Expect(resp.Body.Close()).To(Succeed())
+			}()
 
 			parser := expfmt.NewTextParser(model.UTF8Validation)
 			metricFamilies, err := parser.TextToMetricFamilies(resp.Body)
@@ -253,7 +252,7 @@ func portForward(ctx context.Context, wg *sync.WaitGroup, ns, target, port strin
 		var conn net.Conn
 		conn, err = net.Dial("tcp", "localhost:"+localPort)
 		if err == nil {
-			conn.Close()
+			_ = conn.Close()
 			return nil
 		}
 		time.Sleep(5 * time.Second)

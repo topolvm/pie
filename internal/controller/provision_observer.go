@@ -98,7 +98,10 @@ func (p *provisionObserver) deleteEventTime(namespace, podName string) {
 	delete(p.podPieProbeName, namespacePod{namespace, podName})
 }
 
-func (p *provisionObserver) getNodeNameAndStorageClass(ctx context.Context, namespace, podName string) (string, string, error) {
+func (p *provisionObserver) getNodeNameAndStorageClass(
+	ctx context.Context,
+	namespace, podName string,
+) (string, string, error) {
 	var pod corev1.Pod
 	err := p.client.Get(ctx, client.ObjectKey{Namespace: namespace, Name: podName}, &pod)
 	if err != nil {
@@ -109,7 +112,9 @@ func (p *provisionObserver) getNodeNameAndStorageClass(ctx context.Context, name
 }
 
 func isProbeJob2(o metav1.OwnerReference) bool {
-	return o.Kind == "Job" && (strings.HasPrefix(o.Name, constants.MountProbeNamePrefix) || strings.HasPrefix(o.Name, constants.ProvisionProbeNamePrefix))
+	return o.Kind == "Job" &&
+		(strings.HasPrefix(o.Name, constants.MountProbeNamePrefix) ||
+			strings.HasPrefix(o.Name, constants.ProvisionProbeNamePrefix))
 }
 
 func (p *provisionObserver) deleteOwnerJobOfPod(ctx context.Context, namespace, podName string) error {

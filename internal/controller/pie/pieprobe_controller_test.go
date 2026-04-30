@@ -2,6 +2,7 @@ package pie
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -98,23 +99,23 @@ func prepareObjects(ctx context.Context) error {
 
 func deletePieProbeAndReferencingResources(ctx context.Context, pieProbe *piev1alpha1.PieProbe) error {
 	if err := k8sClient.Delete(ctx, pieProbe); err != nil {
-		return err
+		return fmt.Errorf("failed to delete PieProbe %s: %w", pieProbe.Name, err)
 	}
 
 	var pvcList corev1.PersistentVolumeClaimList
 	if err := k8sClient.List(ctx, &pvcList, client.MatchingLabels(map[string]string{
 		"storage-class": pieProbe.Spec.MonitoringStorageClass,
 	})); err != nil {
-		return err
+		return fmt.Errorf("failed to list PVCs: %w", err)
 	}
 
 	for _, pvc := range pvcList.Items {
-		pvc.ObjectMeta.Finalizers = []string{}
+		pvc.Finalizers = []string{}
 		if err := k8sClient.Update(ctx, &pvc); err != nil {
-			return err
+			return fmt.Errorf("failed to update PVC %s: %w", pvc.Name, err)
 		}
-		if err := k8sClient.Delete(ctx, &pvc); err != nil {
-			return err
+		if err := k8sClient.Delete(ctx, &pvc); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete PVC %s: %w", pvc.Name, err)
 		}
 	}
 
@@ -122,12 +123,12 @@ func deletePieProbeAndReferencingResources(ctx context.Context, pieProbe *piev1a
 	if err := k8sClient.List(ctx, &cronjobList, client.MatchingLabels(map[string]string{
 		"storage-class": pieProbe.Spec.MonitoringStorageClass,
 	})); err != nil {
-		return err
+		return fmt.Errorf("failed to list CronJobs: %w", err)
 	}
 
 	for _, cronjob := range cronjobList.Items {
-		if err := k8sClient.Delete(ctx, &cronjob); err != nil {
-			return err
+		if err := k8sClient.Delete(ctx, &cronjob); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete CronJob %s: %w", cronjob.Name, err)
 		}
 	}
 
@@ -210,7 +211,10 @@ var _ = Describe("PieProbe controller for specifying resources", func() {
 			}
 			_, err := ctrl.CreateOrUpdate(ctx, k8sClient, pieProbe, func() error { return nil })
 			Expect(err).NotTo(HaveOccurred())
-			defer deletePieProbeAndReferencingResources(ctx, pieProbe)
+			defer func() {
+				err := deletePieProbeAndReferencingResources(ctx, pieProbe)
+				Expect(err).NotTo(HaveOccurred())
+			}()
 
 			By("checking the CronJob's resource specified")
 			Eventually(func(g Gomega) {

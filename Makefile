@@ -68,6 +68,14 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet ## Run tests.
 	PIE_ENVTEST_VERSION=$(ENVTEST_K8S_VERSION) PIE_ENVTEST_ASSETS_DIR=$(LOCALBIN) go test ./... -race -coverprofile cover.out 
 
+.PHONY: lint
+lint: golangci-lint ## Run golangci-lint.
+	$(GOLANGCI_LINT) run
+
+.PHONY: lint-fix
+lint-fix: golangci-lint ## Run golangci-lint and perform fixes.
+	$(GOLANGCI_LINT) run --fix
+
 ##@ Build
 
 .PHONY: build
@@ -152,6 +160,7 @@ $(LOCALBIN):
 KUBECTL ?= kubectl
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
@@ -167,3 +176,9 @@ controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessar
 $(CONTROLLER_GEN): $(LOCALBIN)
 	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
 	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
+
+.PHONY: golangci-lint
+golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
+$(GOLANGCI_LINT): $(LOCALBIN)
+	test -s $(GOLANGCI_LINT) && $(GOLANGCI_LINT) version | grep -q $(GOLANGCI_LINT_VERSION) || \
+	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
