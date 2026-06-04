@@ -9,13 +9,14 @@ on:
   schedule:
   - cron: "30 23 * * *"
 
+permissions:
+  issues: write
+  pull-requests: write
+
 jobs:
   stale:
 
     runs-on: ubuntu-slim
-    permissions:
-      issues: write
-      pull-requests: write
 
     steps:
     - uses: actions/stale@v10
