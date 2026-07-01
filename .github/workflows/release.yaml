@@ -30,8 +30,8 @@ jobs:
           if [ "${{ secrets.IMAGE_PREFIX }}" != "" ]; then IMAGE_PREFIX=${{ secrets.IMAGE_PREFIX }}; else IMAGE_PREFIX=ghcr.io/topolvm/; fi
           echo "IMAGE_PREFIX=${IMAGE_PREFIX}" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v6.0.2
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/setup-go@v6.4.0
         with:
           go-version-file: "go.mod"
 
