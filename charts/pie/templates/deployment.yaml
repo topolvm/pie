@@ -30,7 +30,7 @@ spec:
         - name: controller
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.reference }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: metrics
@@ -55,7 +55,7 @@ spec:
           args:
           - "controller"
           - "--container-image"
-          - "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          - "{{ .Values.image.repository }}:{{ .Values.image.reference }}"
           - "--namespace"
           - "{{ .Release.Namespace }}"
           - "--controller-url"
