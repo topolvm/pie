@@ -162,6 +162,7 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 ACTIONLINT ?= $(LOCALBIN)/actionlint
+GHALINT ?= $(LOCALBIN)/ghalint
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
@@ -189,3 +190,9 @@ actionlint: $(ACTIONLINT) ## Download actionlint locally if necessary.
 $(ACTIONLINT): $(LOCALBIN)
 	test -s $(ACTIONLINT) && $(ACTIONLINT) --version | grep -q $(subst v,,$(ACTIONLINT_VERSION)) || \
 	GOBIN=$(LOCALBIN) go install github.com/rhysd/actionlint/cmd/actionlint@$(ACTIONLINT_VERSION)
+
+.PHONY: ghalint
+ghalint: $(GHALINT) ## Download ghalint locally if necessary.
+$(GHALINT): $(LOCALBIN)
+	test -s $(GHALINT) && $(GHALINT) version | grep -q $(subst v,,$(GHALINT_VERSION)) || \
+	GOBIN=$(LOCALBIN) go install github.com/suzuki-shunsuke/ghalint/cmd/ghalint@$(GHALINT_VERSION)

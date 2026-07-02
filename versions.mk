@@ -1,5 +1,7 @@
 # https://github.com/rhysd/actionlint/releases
 ACTIONLINT_VERSION := v1.7.12
+# https://github.com/suzuki-shunsuke/ghalint/releases
+GHALINT_VERSION := v1.5.6
 # https://github.com/helm/chart-testing/releases
 CHART_TESTING_VERSION := 3.14.0
 # https://github.com/kubernetes-sigs/controller-tools/releases
