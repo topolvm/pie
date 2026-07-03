@@ -44,3 +44,15 @@ jobs:
           go-version-file: go.mod
       - run: make ghalint
       - run: bin/ghalint run && bin/ghalint run-action
+
+  zizmor:
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - run: make zizmor
+      - run: bin/zizmor .
