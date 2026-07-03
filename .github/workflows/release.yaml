@@ -37,16 +37,25 @@ jobs:
       - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: "go.mod"
+          cache: false
 
-      - run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - run: make docker-build IMG="ghcr.io/topolvm/pie:${{ steps.check_version.outputs.version }}"
-      - run: docker push "ghcr.io/topolvm/pie:${{ steps.check_version.outputs.version }}"
+      - run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: make docker-build IMG="ghcr.io/topolvm/pie:$VERSION"
+        env:
+          VERSION: ${{ steps.check_version.outputs.version }}
+      - run: docker push "ghcr.io/topolvm/pie:$VERSION"
+        env:
+          VERSION: ${{ steps.check_version.outputs.version }}
 
       - name: "Push branch tag"
         if: ${{ steps.check_version.outputs.prerelease == 'false' }}
+        env:
+          VERSION: ${{ steps.check_version.outputs.version }}
         run: |
-          BRANCH=$(echo ${{ steps.check_version.outputs.version }} | cut -d "." -f 1-2)
-          docker tag "ghcr.io/topolvm/pie:${{ steps.check_version.outputs.version }}" "ghcr.io/topolvm/pie:${BRANCH}"
+          BRANCH=$(echo "$VERSION" | cut -d "." -f 1-2)
+          docker tag "ghcr.io/topolvm/pie:$VERSION" "ghcr.io/topolvm/pie:${BRANCH}"
           docker push "ghcr.io/topolvm/pie:${BRANCH}"
 
       - name: "Get previous tag"
@@ -77,9 +86,11 @@ jobs:
             /repos/${{ github.repository }}/releases \
             -f name="Release ${GITHUB_REF_NAME}" \
             -f tag_name="${GITHUB_REF_NAME}" \
-            -f previous_tag_name="${{ steps.get_previous_tag.outputs.previous_tag }}" \
+            -f previous_tag_name="$PREVIOUS_TAG" \
             -F draft=true \
-            -F prerelease=${{ steps.check_version.outputs.prerelease }} \
+            -F prerelease="$PRERELEASE" \
             -F generate_release_notes=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREVIOUS_TAG: ${{ steps.get_previous_tag.outputs.previous_tag }}
+          PRERELEASE: ${{ steps.check_version.outputs.prerelease }}
