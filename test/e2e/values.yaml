@@ -1,6 +1,6 @@
 image:
   repository: pie
   pullPolicy: IfNotPresent
-  tag: dev
+  reference: dev
 
 controller: {}

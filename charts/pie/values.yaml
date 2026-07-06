@@ -7,8 +7,8 @@ replicaCount: 1
 image:
   repository: ghcr.io/topolvm/pie
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  # The image reference: a tag and/or a digest (e.g. "1.2.3@sha256:...").
+  reference: 0.17.0@sha256:69b04f89c8e2696bdc184a640b71b08b319690ce1d397bded87dbdde18930832
 
 imagePullSecrets: []
 nameOverride: ""
