@@ -161,6 +161,9 @@ KUBECTL ?= kubectl
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
+ACTIONLINT ?= $(LOCALBIN)/actionlint
+GHALINT ?= $(LOCALBIN)/ghalint
+ZIZMOR ?= $(LOCALBIN)/zizmor
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
@@ -182,3 +185,26 @@ golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(GOLANGCI_LINT): $(LOCALBIN)
 	test -s $(GOLANGCI_LINT) && $(GOLANGCI_LINT) version | grep -q $(GOLANGCI_LINT_VERSION) || \
 	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+
+.PHONY: actionlint
+actionlint: $(ACTIONLINT) ## Download actionlint locally if necessary.
+$(ACTIONLINT): $(LOCALBIN)
+	test -s $(ACTIONLINT) && $(ACTIONLINT) --version | grep -q $(subst v,,$(ACTIONLINT_VERSION)) || \
+	GOBIN=$(LOCALBIN) go install github.com/rhysd/actionlint/cmd/actionlint@$(ACTIONLINT_VERSION)
+
+.PHONY: ghalint
+ghalint: $(GHALINT) ## Download ghalint locally if necessary.
+$(GHALINT): $(LOCALBIN)
+	test -s $(GHALINT) && $(GHALINT) version | grep -q $(subst v,,$(GHALINT_VERSION)) || \
+	GOBIN=$(LOCALBIN) go install github.com/suzuki-shunsuke/ghalint/cmd/ghalint@$(GHALINT_VERSION)
+
+.PHONY: zizmor
+zizmor: $(ZIZMOR) ## Download zizmor locally if necessary.
+$(ZIZMOR): $(LOCALBIN)
+	test -s $(ZIZMOR) && $(ZIZMOR) --version | grep -q $(subst v,,$(ZIZMOR_VERSION)) || \
+	{ tmp=$$(mktemp) && \
+	  curl -sSLf https://github.com/zizmorcore/zizmor/releases/download/$(ZIZMOR_VERSION)/zizmor-x86_64-unknown-linux-gnu.tar.gz \
+	    -o $$tmp && \
+	  echo "$(ZIZMOR_SHA256)  $$tmp" | sha256sum -c && \
+	  tar xzf $$tmp -C $(LOCALBIN) && \
+	  rm -f $$tmp; }
