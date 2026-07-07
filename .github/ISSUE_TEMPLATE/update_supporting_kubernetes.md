@@ -25,6 +25,8 @@ Must update Kubernetes with each new version of Kubernetes.
   - https://github.com/kubernetes-sigs/controller-tools/releases
 - [ ] kind
   - https://github.com/kubernetes-sigs/kind/releases
+- [ ] kubebuilder
+  - https://github.com/kubernetes-sigs/kubebuilder/releases
 
 ### Release notes check
 
