@@ -72,6 +72,19 @@ test: manifests generate fmt vet ## Run tests.
 lint: golangci-lint ## Run golangci-lint.
 	$(GOLANGCI_LINT) run
 
+.PHONY: run-actionlint
+run-actionlint: actionlint ## Run actionlint for GitHub workflows and actions.
+	$(ACTIONLINT)
+
+.PHONY: run-ghalint
+run-ghalint: ghalint ## Run ghalint for GitHub workflows and actions.
+	$(GHALINT) run
+	$(GHALINT) run-action
+
+.PHONY: run-zizmor
+run-zizmor: zizmor ## Run zizmor for GitHub workflows and actions.
+	$(ZIZMOR) .
+
 .PHONY: lint-fix
 lint-fix: golangci-lint ## Run golangci-lint and perform fixes.
 	$(GOLANGCI_LINT) run --fix
