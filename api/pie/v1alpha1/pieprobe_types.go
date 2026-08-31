@@ -45,6 +45,9 @@ type PieProbeSpec struct {
 
 	//+kubebuilder:validation:Optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	//+kubebuilder:validation:Optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 // PieProbeStatus defines the observed state of PieProbe

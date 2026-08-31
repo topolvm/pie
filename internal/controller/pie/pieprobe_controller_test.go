@@ -533,6 +533,38 @@ var _ = Describe("PieProbe controller", func() {
 		}).Should(Succeed())
 	})
 
+	It("should set tolerations for provision and mount probe CronJobs", func() {
+		By("updating PieProbe with tolerations")
+		var pieProbe piev1alpha1.PieProbe
+		Eventually(func(g Gomega) {
+			err := k8sClient.Get(ctx, client.ObjectKey{Name: "pie-probe-sc", Namespace: "default"}, &pieProbe)
+			g.Expect(err).NotTo(HaveOccurred())
+		}).Should(Succeed())
+
+		tolerations := []corev1.Toleration{{
+			Key:      "test-key",
+			Operator: corev1.TolerationOpEqual,
+			Value:    "storage",
+			Effect:   corev1.TaintEffectNoSchedule,
+		}}
+		pieProbe.Spec.Tolerations = tolerations
+		err := k8sClient.Update(ctx, &pieProbe)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("confirming that every probe CronJob has the configured tolerations")
+		Eventually(func(g Gomega) {
+			var cronjobList batchv1.CronJobList
+			err := k8sClient.List(ctx, &cronjobList, client.MatchingLabels(map[string]string{
+				"storage-class": "sc",
+			}))
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(cronjobList.Items).To(HaveLen(3))
+			for _, cronjob := range cronjobList.Items {
+				g.Expect(cronjob.Spec.JobTemplate.Spec.Template.Spec.Tolerations).To(Equal(tolerations))
+			}
+		}).Should(Succeed())
+	})
+
 	It("should delete CronJob and PVC successfully when a node is deleted", func() {
 		By("confirming that the CronJob and PVC were created")
 		var node corev1.Node

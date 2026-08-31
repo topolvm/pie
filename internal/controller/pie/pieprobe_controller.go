@@ -420,6 +420,7 @@ func (r *PieProbeReconciler) createOrUpdateJob(
 		cronjob.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = corev1.RestartPolicyNever
 		var periodSeconds int64 = 5
 		cronjob.Spec.JobTemplate.Spec.Template.Spec.TerminationGracePeriodSeconds = &periodSeconds
+		cronjob.Spec.JobTemplate.Spec.Template.Spec.Tolerations = pieProbe.Spec.Tolerations
 
 		switch kind {
 		case ProvisionProbe:
