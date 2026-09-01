@@ -8,7 +8,7 @@ image:
   repository: ghcr.io/topolvm/pie
   pullPolicy: IfNotPresent
   # The image reference: a tag and/or a digest (e.g. "1.2.3@sha256:...").
-  reference: 0.17.0@sha256:69b04f89c8e2696bdc184a640b71b08b319690ce1d397bded87dbdde18930832
+  reference: 0.18.0@sha256:aa467443e4070d5b18e269d6b4656e4436e3d36ab05351ce99b32cb38321a707
 
 imagePullSecrets: []
 nameOverride: ""
