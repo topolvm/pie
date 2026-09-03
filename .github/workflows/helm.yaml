@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 jobs:
   lint:
     runs-on: "ubuntu-22.04"
@@ -20,9 +21,10 @@ jobs:
           persist-credentials: false
 
       - name: "Setup Go"
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        uses: ./.github/actions/setup-go
         with:
           go-version-file: "go.mod"
+          takumi-guard-bot-id: ${{ vars.TAKUMI_GUARD_BOT_ID }}
 
       - name: "Set up chart-testing"
         uses: helm/chart-testing-action@6ec842c01de15ebb84c8627d2744a0c2f2755c9f # v2.8.0
